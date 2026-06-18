@@ -17,7 +17,9 @@
       "Bash(php -l app/Http/Controllers/Api/CommentController.php)",
       "Bash(php -l app/Models/CatchComment.php)",
       "Bash(php -l app/Http/Controllers/Api/AuthController.php)",
-      "Bash(php -l app/Models/User.php)"
+      "Bash(php -l app/Models/User.php)",
+      "Bash(php -l app/Http/Requests/Catch/StoreCatchRequest.php)",
+      "Bash(php -l app/Http/Resources/CatchResource.php)"
     ]
   }
 }

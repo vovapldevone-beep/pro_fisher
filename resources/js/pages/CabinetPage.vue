@@ -24,6 +24,7 @@
                         <RecentCatchesCard
                             :catches="cabinet.recent_catches"
                             @add-catch="showAddCatch = true"
+                            @add-post="showAddPost = true"
                         />
                     </div>
                     <div class="lg:col-span-4">
@@ -41,6 +42,13 @@
             @close="showAddCatch = false"
         />
 
+        <AddPostModal
+            :show="showAddPost"
+            :saving="catchesStore.saving"
+            @submit="handleAddPost"
+            @close="showAddPost = false"
+        />
+
         <EditProfileModal
             :show="showEditProfile"
             :profile="cabinet?.profile ?? {}"
@@ -56,6 +64,7 @@ import { fetchCabinet } from '../api/cabinet';
 import AchievementsCard from '../components/cabinet/AchievementsCard.vue';
 import ActivityFeed from '../components/cabinet/ActivityFeed.vue';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
+import AddPostModal from '../components/cabinet/AddPostModal.vue';
 import EditProfileModal from '../components/cabinet/EditProfileModal.vue';
 import PermitsCard from '../components/cabinet/PermitsCard.vue';
 import ProfileCard from '../components/cabinet/ProfileCard.vue';
@@ -72,6 +81,7 @@ const lakesStore = useLakesStore();
 const cabinet = ref(null);
 const loading = ref(true);
 const showAddCatch = ref(false);
+const showAddPost = ref(false);
 const showEditProfile = ref(false);
 
 async function loadCabinet() {
@@ -87,6 +97,12 @@ async function loadCabinet() {
 async function handleAddCatch(formData) {
     await catchesStore.addCatch(formData);
     showAddCatch.value = false;
+    await loadCabinet();
+}
+
+async function handleAddPost(formData) {
+    await catchesStore.addCatch(formData);
+    showAddPost.value = false;
     await loadCabinet();
 }
 

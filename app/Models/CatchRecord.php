@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'user_id',
     'lake_id',
+    'type',
     'fish_name',
     'weight',
     'photo',
     'caught_at',
     'notes',
+    'location',
 ])]
 class CatchRecord extends Model
 {

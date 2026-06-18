@@ -56,7 +56,7 @@ class HomeController extends Controller
             ->with(['user:id,name,avatar_url', 'lake:id,name,slug'])
             ->withCount(['postLikes', 'catchComments'])
             ->when($userId, fn ($q) => $q->with(['postLikes' => fn ($q) => $q->where('user_id', $userId)]))
-            ->latest('caught_at')
+            ->latest('created_at')
             ->get();
 
         return CatchResource::collection($catches);

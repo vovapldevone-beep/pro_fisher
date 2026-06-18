@@ -18,14 +18,22 @@
             />
         </div>
 
-        <button
-            v-if="showAddButton"
-            type="button"
-            class="mt-4 w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-            @click="$emit('add-catch')"
-        >
-            + Додати улов
-        </button>
+        <div v-if="showAddButton" class="mt-4 flex gap-2">
+            <button
+                type="button"
+                class="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                @click="$emit('add-catch')"
+            >
+                + Улов
+            </button>
+            <button
+                type="button"
+                class="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                @click="$emit('add-post')"
+            >
+                + Пост
+            </button>
+        </div>
     </div>
 </template>
 
@@ -43,5 +51,5 @@ defineProps({
     },
 });
 
-defineEmits(['add-catch']);
+defineEmits(['add-catch', 'add-post']);
 </script>

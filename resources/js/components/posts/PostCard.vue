@@ -18,10 +18,25 @@
             🐟
         </div>
 
+        <!-- Location badge (posts only) -->
+        <a
+            v-if="catchItem.location"
+            :href="mapsUrl"
+            target="_blank"
+            rel="noopener"
+            class="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-blue-600/90 px-2.5 py-1 text-xs font-medium text-white shadow backdrop-blur-sm hover:bg-blue-700/90"
+            @click.stop
+        >
+            <svg class="h-3 w-3 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+            <span class="max-w-[120px] truncate">{{ locationLabel }}</span>
+        </a>
+
         <!-- Bottom gradient + info -->
         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 pt-10">
             <div class="flex items-baseline justify-between gap-1">
-                <p class="truncate font-semibold text-white">{{ catchItem.fish_name }}</p>
+                <p class="truncate font-semibold text-white">{{ title }}</p>
                 <p v-if="catchItem.weight" class="shrink-0 text-sm text-white/90">{{ catchItem.weight }} кг</p>
             </div>
             <div class="mt-1 flex items-center justify-between text-xs text-white/70">
@@ -31,6 +46,7 @@
                     </svg>
                     {{ catchItem.lake.name }}
                 </span>
+                <span v-else-if="catchItem.caught_at" class="truncate text-white/60 italic">{{ formatDate(catchItem.caught_at) }}</span>
                 <!-- Like button -->
                 <button
                     type="button"
@@ -92,6 +108,21 @@ const likesCount = ref(props.catchItem.likes_count ?? 0);
 const initials = computed(() => {
     const name = props.catchItem.user?.name || '?';
     return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+});
+
+const title = computed(() =>
+    props.catchItem.fish_name || props.catchItem.notes || 'Пост'
+);
+
+const locationLabel = computed(() => {
+    const loc = props.catchItem.location ?? '';
+    const coordsMatch = loc.match(/^(-?\d+\.\d+),\s*(-?\d+\.\d+)$/);
+    return coordsMatch ? `${parseFloat(coordsMatch[1]).toFixed(3)}, ${parseFloat(coordsMatch[2]).toFixed(3)}` : loc;
+});
+
+const mapsUrl = computed(() => {
+    const loc = props.catchItem.location ?? '';
+    return `https://www.google.com/maps/search/${encodeURIComponent(loc)}`;
 });
 
 async function handleLike() {
