@@ -59,7 +59,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { fetchCabinet } from '../api/cabinet';
 import AchievementsCard from '../components/cabinet/AchievementsCard.vue';
 import ActivityFeed from '../components/cabinet/ActivityFeed.vue';
@@ -74,6 +75,8 @@ import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
 import { useLakesStore } from '../stores/lakes';
 
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const catchesStore = useCatchesStore();
 const lakesStore = useLakesStore();
@@ -114,6 +117,13 @@ function handleProfileSaved(updatedUser) {
     authStore.user.name = updatedUser.name;
     authStore.user.avatar_url = updatedUser.avatar_url;
 }
+
+watch(() => route.query.action, (action) => {
+    if (!action) return;
+    if (action === 'add-catch') showAddCatch.value = true;
+    if (action === 'add-post') showAddPost.value = true;
+    router.replace({ query: {} });
+}, { immediate: true });
 
 onMounted(async () => {
     await Promise.all([loadCabinet(), lakesStore.loadLakes()]);
