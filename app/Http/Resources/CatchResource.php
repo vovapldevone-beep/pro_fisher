@@ -30,6 +30,7 @@ class CatchResource extends JsonResource
             'likes_count' => $this->post_likes_count ?? 0,
             'is_liked' => $this->relationLoaded('postLikes') ? $this->postLikes->isNotEmpty() : false,
             'comments_count' => $this->catch_comments_count ?? 0,
+            'is_commented' => $this->relationLoaded('userComments') ? $this->userComments->isNotEmpty() : false,
             'created_at' => $this->created_at?->toISOString(),
         ];
     }

@@ -49,4 +49,9 @@ class CatchRecord extends Model
     {
         return $this->hasMany(CatchComment::class, 'catch_id');
     }
+
+    public function userComments(): HasMany
+    {
+        return $this->hasMany(CatchComment::class, 'catch_id');
+    }
 }

@@ -53,9 +53,12 @@ class HomeController extends Controller
         $userId = $request->user()?->id;
 
         $catches = CatchRecord::query()
-            ->with(['user:id,name,avatar_url', 'lake:id,name,slug'])
+            ->with(['user:id,name,avatar_url', 'lake:id,name,slug,latitude,longitude'])
             ->withCount(['postLikes', 'catchComments'])
-            ->when($userId, fn ($q) => $q->with(['postLikes' => fn ($q) => $q->where('user_id', $userId)]))
+            ->when($userId, fn ($q) => $q->with([
+                'postLikes'     => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
+                'userComments'  => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
+            ]))
             ->latest('created_at')
             ->get();
 

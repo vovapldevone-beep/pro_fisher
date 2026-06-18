@@ -39,15 +39,10 @@
                 <span v-if="post.weight" class="text-slate-600">{{ post.weight }} кг</span>
             </div>
 
-            <!-- Lake + date -->
-            <div class="mt-1 flex items-center justify-between text-sm text-slate-500">
-                <span v-if="post.lake" class="flex items-center gap-1">
-                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    {{ post.lake.name }}
-                </span>
-                <span>{{ formatDate(post.caught_at) }}</span>
+            <!-- Location / Lake + date -->
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                <LocationBadge v-if="locationBadge" :label="locationBadge.label" :url="locationBadge.url" />
+                <span v-if="post.caught_at || post.created_at" class="text-xs text-slate-400">{{ formatDate(post.caught_at || post.created_at) }}</span>
             </div>
 
             <!-- Likes + comments -->
@@ -113,15 +108,16 @@
 </template>
 
 <script setup>
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { fetchComments, postComment } from '../../api/comments';
+import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
 
 const props = defineProps({
     post: { type: Object, required: true },
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close', 'comment-added']);
 
 const comments = ref([]);
 const loadingComments = ref(true);
@@ -146,6 +142,7 @@ async function submitComment() {
         const comment = await postComment(props.post.id, body);
         comments.value.push(comment);
         newComment.value = '';
+        emit('comment-added', props.post.id);
         await nextTick();
         commentsEl.value?.scrollTo({ top: commentsEl.value.scrollHeight, behavior: 'smooth' });
     } finally {
@@ -168,6 +165,23 @@ function timeAgo(dateStr) {
     if (hours < 24) return `${hours} год тому`;
     return `${days} дн. тому`;
 }
+
+const locationBadge = computed(() => {
+    const p = props.post;
+    if (p.location) {
+        return {
+            label: 'Локація: ' + p.location,
+            url: `https://www.google.com/maps/search/${encodeURIComponent(p.location)}`,
+        };
+    }
+    if (p.lake?.latitude && p.lake?.longitude) {
+        return {
+            label: 'Озеро: ' + p.lake.name,
+            url: `https://www.google.com/maps?q=${p.lake.latitude},${p.lake.longitude}`,
+        };
+    }
+    return null;
+});
 
 watch(() => props.post.id, loadComments, { immediate: true });
 </script>
