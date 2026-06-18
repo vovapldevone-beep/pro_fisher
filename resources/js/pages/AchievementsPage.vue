@@ -1,0 +1,89 @@
+<template>
+    <div class="min-h-screen bg-slate-50 py-8">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="mb-8 flex items-center gap-4">
+                <button
+                    type="button"
+                    class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100"
+                    @click="$router.back()"
+                >
+                    <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Мої досягнення</h1>
+                    <p v-if="!loading" class="mt-0.5 text-sm text-slate-500">
+                        {{ earnedCount }} / {{ totalCount }} отримано
+                    </p>
+                </div>
+                <div
+                    v-if="!loading"
+                    class="ml-auto flex h-14 w-14 flex-col items-center justify-center rounded-full bg-emerald-100"
+                >
+                    <span class="text-lg font-bold text-emerald-700">{{ earnedCount }}</span>
+                    <span class="text-[10px] text-emerald-600">з {{ totalCount }}</span>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="loading" class="py-24 text-center text-slate-400">Завантаження...</div>
+
+            <template v-else>
+                <!-- Earned -->
+                <section v-if="earned.length" class="mb-8">
+                    <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-600">
+                        Отримані ({{ earned.length }})
+                    </h2>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <AchievementCard
+                            v-for="a in earned"
+                            :key="a.id"
+                            :achievement="a"
+                        />
+                    </div>
+                </section>
+
+                <!-- Not earned -->
+                <section v-if="notEarned.length">
+                    <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                        В процесі ({{ notEarned.length }})
+                    </h2>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <AchievementCard
+                            v-for="a in notEarned"
+                            :key="a.id"
+                            :achievement="a"
+                        />
+                    </div>
+                </section>
+            </template>
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import { fetchAchievements } from '../api/cabinet';
+import AchievementCard from '../components/cabinet/AchievementCard.vue';
+
+const loading = ref(true);
+const achievements = ref([]);
+const earnedCount = ref(0);
+const totalCount = ref(0);
+
+const earned = computed(() => achievements.value.filter((a) => a.earned));
+const notEarned = computed(() => achievements.value.filter((a) => !a.earned));
+
+onMounted(async () => {
+    try {
+        const data = await fetchAchievements();
+        achievements.value = data.achievements;
+        earnedCount.value = data.earned_count;
+        totalCount.value = data.total_count;
+    } finally {
+        loading.value = false;
+    }
+});
+</script>

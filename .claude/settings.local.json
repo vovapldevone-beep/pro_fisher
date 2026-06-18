@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(php artisan *)",
+      "Bash(php -r ' *)",
+      "Bash(php /home/qwas/projects/pro_fisher/artisan tinker '--execute= *)",
+      "Bash(php /home/qwas/projects/pro_fisher/artisan tinker --execute=\"echo 'Users: ' . \\\\App\\\\Models\\\\User::count\\(\\) . ', Catches: ' . \\\\App\\\\Models\\\\CatchRecord::count\\(\\) . ', Lakes: ' . \\\\App\\\\Models\\\\Lake::count\\(\\);\")",
+      "Bash(php /home/qwas/projects/pro_fisher/artisan make:migration create_follows_table)",
+      "Bash(php /home/qwas/projects/pro_fisher/artisan migrate)",
+      "Bash(php -l app/Http/Controllers/Api/CabinetController.php)",
+      "Bash(php -l app/Http/Controllers/Api/CatchController.php)",
+      "Bash(php -l app/Http/Controllers/Api/FisherController.php)",
+      "Bash(php -l app/Models/Activity.php)",
+      "Bash(php -l app/Http/Controllers/Api/LikeController.php)",
+      "Bash(php -l app/Http/Controllers/Api/HomeController.php)",
+      "Bash(php -l app/Http/Controllers/Api/CommentController.php)",
+      "Bash(php -l app/Models/CatchComment.php)",
+      "Bash(php -l app/Http/Controllers/Api/AuthController.php)",
+      "Bash(php -l app/Models/User.php)"
+    ]
+  }
+}

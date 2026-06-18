@@ -1,0 +1,43 @@
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CabinetController;
+use App\Http\Controllers\Api\CatchController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FisherController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\LakeController;
+use App\Http\Controllers\Api\LikeController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/home/stats', [HomeController::class, 'stats']);
+Route::get('/home/popular-lakes', [HomeController::class, 'popularLakes']);
+Route::get('/home/recent-catches', [HomeController::class, 'recentCatches']);
+Route::get('/posts', [HomeController::class, 'posts']);
+
+Route::get('/lakes', [LakeController::class, 'index']);
+Route::get('/lakes/{lake}', [LakeController::class, 'show']);
+
+Route::get('/fishers/{user}', [FisherController::class, 'show']);
+Route::get('/catches/{catchRecord}/comments', [CommentController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/user/profile', [AuthController::class, 'updateProfile']);
+    Route::get('/cabinet', [CabinetController::class, 'show']);
+    Route::get('/cabinet/achievements', [CabinetController::class, 'achievements']);
+
+    Route::post('/fishers/{user}/follow', [FisherController::class, 'follow']);
+    Route::delete('/fishers/{user}/follow', [FisherController::class, 'unfollow']);
+
+    Route::post('/catches/{catchRecord}/like', [LikeController::class, 'toggle']);
+    Route::post('/catches/{catchRecord}/comments', [CommentController::class, 'store']);
+    Route::get('/catches', [CatchController::class, 'index']);
+    Route::post('/catches', [CatchController::class, 'store']);
+    Route::put('/catches/{catchRecord}', [CatchController::class, 'update']);
+    Route::delete('/catches/{catchRecord}', [CatchController::class, 'destroy']);
+});
