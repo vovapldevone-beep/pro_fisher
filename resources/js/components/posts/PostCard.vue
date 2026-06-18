@@ -63,26 +63,9 @@
         </div>
 
         <!-- User avatar (top-right) -->
-        <button
-            v-if="catchItem.user"
-            type="button"
-            class="absolute right-2 top-2 h-9 w-9 overflow-hidden rounded-full border-2 border-white shadow-lg transition hover:scale-110"
-            :title="catchItem.user.name"
-            @click.stop="goToFisher"
-        >
-            <img
-                v-if="catchItem.user.avatar_url"
-                :src="catchItem.user.avatar_url"
-                :alt="catchItem.user.name"
-                class="h-full w-full object-cover"
-            />
-            <div
-                v-else
-                class="flex h-full w-full items-center justify-center bg-emerald-500 text-xs font-bold text-white"
-            >
-                {{ initials }}
-            </div>
-        </button>
+        <div v-if="catchItem.user" class="absolute right-2 top-2">
+            <UserAvatar :user="catchItem.user" size="md" />
+        </div>
     </div>
 </template>
 
@@ -91,6 +74,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import { toggleLike } from '../../api/catches';
+import UserAvatar from '../shared/UserAvatar.vue';
 
 const props = defineProps({
     catchItem: { type: Object, required: true },
@@ -102,13 +86,9 @@ const emit = defineEmits(['select', 'like-changed']);
 const router = useRouter();
 const authStore = useAuthStore();
 
+
 const liked = ref(props.catchItem.is_liked ?? false);
 const likesCount = ref(props.catchItem.likes_count ?? 0);
-
-const initials = computed(() => {
-    const name = props.catchItem.user?.name || '?';
-    return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
-});
 
 const title = computed(() =>
     props.catchItem.fish_name || props.catchItem.notes || 'Пост'
@@ -140,15 +120,6 @@ async function handleLike() {
     } catch {
         liked.value = !liked.value;
         likesCount.value += liked.value ? 1 : -1;
-    }
-}
-
-function goToFisher() {
-    if (!props.catchItem.user?.id) return;
-    if (String(props.catchItem.user.id) === String(authStore.user?.id)) {
-        router.push({ name: 'cabinet' });
-    } else {
-        router.push({ name: 'fisher', params: { id: props.catchItem.user.id } });
     }
 }
 

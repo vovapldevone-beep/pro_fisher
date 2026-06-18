@@ -29,12 +29,7 @@
         <div class="flex-shrink-0 border-b border-slate-100 px-4 py-3">
             <!-- Author -->
             <div v-if="post.user" class="mb-3 flex items-center gap-2">
-                <div class="h-7 w-7 overflow-hidden rounded-full bg-emerald-500">
-                    <img v-if="post.user.avatar_url" :src="post.user.avatar_url" class="h-full w-full object-cover" />
-                    <span v-else class="flex h-full w-full items-center justify-center text-[10px] font-bold text-white">
-                        {{ post.user.name?.slice(0,2).toUpperCase() }}
-                    </span>
-                </div>
+                <UserAvatar :user="post.user" size="sm" />
                 <span class="text-sm font-medium text-slate-700">{{ post.user.name }}</span>
             </div>
 
@@ -80,12 +75,7 @@
             <div v-if="loadingComments" class="py-6 text-center text-sm text-slate-400">Завантаження...</div>
             <div v-else-if="!comments.length" class="py-6 text-center text-sm text-slate-400">Ще немає коментарів</div>
             <div v-for="comment in comments" :key="comment.id" class="flex gap-2">
-                <div class="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full bg-emerald-500">
-                    <img v-if="comment.user.avatar_url" :src="comment.user.avatar_url" class="h-full w-full object-cover" />
-                    <span v-else class="flex h-full w-full items-center justify-center text-[10px] font-bold text-white">
-                        {{ comment.user.name?.slice(0,2).toUpperCase() }}
-                    </span>
-                </div>
+                <UserAvatar :user="comment.user" size="sm" />
                 <div class="flex-1">
                     <div class="rounded-xl bg-slate-50 px-3 py-2">
                         <span class="text-xs font-semibold text-slate-700">{{ comment.user.name }}</span>
@@ -125,6 +115,7 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue';
 import { fetchComments, postComment } from '../../api/comments';
+import UserAvatar from '../shared/UserAvatar.vue';
 
 const props = defineProps({
     post: { type: Object, required: true },

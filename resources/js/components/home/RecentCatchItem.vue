@@ -1,9 +1,7 @@
 <template>
     <div class="flex items-center gap-4 rounded-xl p-3 transition hover:bg-slate-50">
         <div class="flex w-28 shrink-0 items-center gap-2">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
-                {{ initials }}
-            </div>
+            <UserAvatar :user="catchItem.user" size="md" />
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-slate-900">{{ catchItem.user?.name }}</p>
                 <p class="text-xs text-slate-400">{{ timeAgo }}</p>
@@ -43,17 +41,13 @@
 
 <script setup>
 import { computed } from 'vue';
+import UserAvatar from '../shared/UserAvatar.vue';
 
 const props = defineProps({
     catchItem: {
         type: Object,
         required: true,
     },
-});
-
-const initials = computed(() => {
-    const name = props.catchItem.user?.name || '?';
-    return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 });
 
 const timeAgo = computed(() => {
