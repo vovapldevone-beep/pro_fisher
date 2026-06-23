@@ -20,7 +20,12 @@
       "Bash(php -l app/Models/User.php)",
       "Bash(php -l app/Http/Requests/Catch/StoreCatchRequest.php)",
       "Bash(php -l app/Http/Resources/CatchResource.php)",
-      "Bash(php -l app/Models/CatchRecord.php)"
+      "Bash(php -l app/Models/CatchRecord.php)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"const m = require\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\); console.log\\(Object.keys\\(m\\)\\)\")",
+      "Bash(node -e \"import\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\)\")",
+      "Bash(node -e \"import\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\).then\\(m => { const cu = m.createUnhead; console.log\\(typeof cu\\); const h = cu\\(\\); console.log\\(typeof h?.install\\); }\\)\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

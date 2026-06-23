@@ -38,6 +38,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useHead } from '@unhead/vue';
 import { fetchFisher, followFisher, unfollowFisher } from '../api/fishers';
 import { useAuthStore } from '../stores/auth';
 import AchievementsCard from '../components/cabinet/AchievementsCard.vue';
@@ -51,6 +52,24 @@ const authStore = useAuthStore();
 const fisher = ref(null);
 const loading = ref(true);
 const isFollowing = ref(false);
+
+useHead({
+    title: computed(() =>
+        fisher.value?.profile?.name
+            ? `${fisher.value.profile.name} — рибалка | Pro Fisher`
+            : 'Pro Fisher'
+    ),
+    meta: computed(() => {
+        if (!fisher.value?.profile) return [];
+        const stats = fisher.value.stats;
+        const description = `${fisher.value.profile.name} на Pro Fisher. Уловів: ${stats?.catches_count ?? 0}, підписників: ${stats?.followers_count ?? 0}.`;
+        return [
+            { name: 'description', content: description },
+            { property: 'og:title', content: `${fisher.value.profile.name} | Pro Fisher` },
+            { property: 'og:description', content: description },
+        ];
+    }),
+});
 
 const recentCatches = computed(() =>
     fisher.value?.recent_catches?.data ?? fisher.value?.recent_catches ?? []

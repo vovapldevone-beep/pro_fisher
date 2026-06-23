@@ -348,6 +348,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useHead } from '@unhead/vue';
 import { fetchLake } from '../api/lakes';
 
 const route = useRoute();
@@ -355,6 +356,30 @@ const router = useRouter();
 
 const lake = ref(null);
 const loading = ref(true);
+
+useHead({
+    title: computed(() =>
+        lake.value
+            ? `Озеро ${lake.value.name} — риболовля, відгуки, дозволи | Pro Fisher`
+            : 'Pro Fisher'
+    ),
+    meta: computed(() => {
+        if (!lake.value) return [];
+        const description = [
+            lake.value.fish_species && `Риба: ${lake.value.fish_species}.`,
+            lake.value.rating && `Рейтинг ${lake.value.rating}.`,
+            lake.value.region && `${lake.value.region}, Польща.`,
+        ].filter(Boolean).join(' ');
+        const image = lake.value.photos?.[0]?.url ?? '';
+        return [
+            { name: 'description', content: description },
+            { property: 'og:title', content: `Озеро ${lake.value.name} | Pro Fisher` },
+            { property: 'og:description', content: description },
+            { property: 'og:image', content: image },
+            { property: 'og:type', content: 'website' },
+        ];
+    }),
+});
 const activeTab = ref('overview');
 const activePhotoIndex = ref(0);
 const selectedPermit = ref(1);
