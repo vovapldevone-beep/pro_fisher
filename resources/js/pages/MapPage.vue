@@ -15,6 +15,7 @@
                 :lakes="lakesStore.lakes"
                 :highlighted-slug="lakesStore.selectedLake?.slug"
                 @lake-selected="handleLakeSelected"
+                @bounds-changed="handleBoundsChanged"
             />
         </div>
 
@@ -66,6 +67,10 @@ const lakeMapRef = ref(null);
 
 const initialSearch = computed(() => route.query.q?.toString() || '');
 
+async function handleBoundsChanged(bounds) {
+    await lakesStore.loadLakes(bounds);
+}
+
 async function handleLakeSelected(lake) {
     showCard.value = true;
     showList.value = false;
@@ -82,8 +87,6 @@ function closeCard() {
 }
 
 onMounted(async () => {
-    await lakesStore.loadLakes();
-
     const lakeSlug = route.query.lake;
     if (lakeSlug) {
         showCard.value = true;

@@ -19,7 +19,8 @@
       "Bash(php -l app/Http/Controllers/Api/AuthController.php)",
       "Bash(php -l app/Models/User.php)",
       "Bash(php -l app/Http/Requests/Catch/StoreCatchRequest.php)",
-      "Bash(php -l app/Http/Resources/CatchResource.php)"
+      "Bash(php -l app/Http/Resources/CatchResource.php)",
+      "Bash(php -l app/Models/CatchRecord.php)"
     ]
   }
 }

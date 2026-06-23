@@ -72,7 +72,12 @@
             <div v-for="comment in comments" :key="comment.id" class="flex gap-2">
                 <UserAvatar :user="comment.user" size="sm" />
                 <div class="flex-1">
-                    <div class="rounded-xl bg-slate-50 px-3 py-2">
+                    <div
+                        class="rounded-xl px-3 py-2"
+                        :class="String(comment.user?.id) === String(authStore.user?.id)
+                            ? 'bg-emerald-500/15'
+                            : 'bg-slate-50'"
+                    >
                         <span class="text-xs font-semibold text-slate-700">{{ comment.user.name }}</span>
                         <p class="mt-0.5 text-sm text-slate-700">{{ comment.body }}</p>
                     </div>
@@ -110,8 +115,11 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import { fetchComments, postComment } from '../../api/comments';
+import { useAuthStore } from '../../stores/auth';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
+
+const authStore = useAuthStore();
 
 const props = defineProps({
     post: { type: Object, required: true },

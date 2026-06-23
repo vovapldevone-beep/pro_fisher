@@ -8,16 +8,46 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-                <!-- Filter tabs (auth only) -->
+                <!-- Filter tabs -->
                 <template v-if="authStore.isAuthenticated">
+                    <!-- "Всі" tab -->
                     <button
-                        v-for="tab in filterTabs"
+                        type="button"
+                        class="rounded-full px-4 py-1.5 text-sm font-medium transition"
+                        :class="activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                        @click="activeFilter = 'all'"
+                    >
+                        Всі
+                    </button>
+
+                    <!-- Type segmented control -->
+                    <div class="flex overflow-hidden rounded-full border border-slate-200 bg-slate-100 text-sm font-medium">
+                        <button
+                            type="button"
+                            class="px-4 py-1.5 transition"
+                            :class="typeFilter === 'post' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
+                            @click="typeFilter = typeFilter === 'post' ? 'all' : 'post'"
+                        >
+                            Пости
+                        </button>
+                        <span class="flex items-center text-slate-300">/</span>
+                        <button
+                            type="button"
+                            class="px-4 py-1.5 transition"
+                            :class="typeFilter === 'catch' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
+                            @click="typeFilter = typeFilter === 'catch' ? 'all' : 'catch'"
+                        >
+                            Улови
+                        </button>
+                    </div>
+
+                    <!-- Вподобані / Коментовані -->
+                    <button
+                        v-for="tab in filterTabs.slice(1)"
                         :key="tab.key"
                         type="button"
                         class="rounded-full px-4 py-1.5 text-sm font-medium transition"
-                        :class="activeFilter === tab.key
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                        :class="activeFilter === tab.key ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
                         @click="activeFilter = tab.key"
                     >
                         {{ tab.label }}
@@ -117,6 +147,8 @@ const activeFilter = ref('all');
 const showAddCatch = ref(false);
 const showAddPost = ref(false);
 
+const typeFilter = ref('all'); // 'all' | 'post' | 'catch'
+
 const filterTabs = [
     { key: 'all', label: 'Всі' },
     { key: 'liked', label: '♥ Вподобані' },
@@ -124,9 +156,12 @@ const filterTabs = [
 ];
 
 const filteredCatches = computed(() => {
-    if (activeFilter.value === 'liked') return catches.value.filter((c) => c.is_liked);
-    if (activeFilter.value === 'commented') return catches.value.filter((c) => c.is_commented);
-    return catches.value;
+    let list = catches.value;
+    if (typeFilter.value === 'post') list = list.filter((c) => c.type === 'post');
+    if (typeFilter.value === 'catch') list = list.filter((c) => c.type === 'catch' || !c.type);
+    if (activeFilter.value === 'liked') return list.filter((c) => c.is_liked);
+    if (activeFilter.value === 'commented') return list.filter((c) => c.is_commented);
+    return list;
 });
 
 async function loadPosts() {

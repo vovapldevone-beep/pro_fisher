@@ -17,12 +17,13 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['lake-selected']);
+const emit = defineEmits(['lake-selected', 'bounds-changed']);
 
 const mapContainer = ref(null);
 let map = null;
 let markersLayer = null;
 const markersBySlug = {};
+let boundsTimer = null;
 
 const defaultIcon = L.icon({
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -47,6 +48,24 @@ function initMap() {
 
     markersLayer = L.layerGroup().addTo(map);
     updateMarkers();
+
+    map.on('moveend zoomend', () => {
+        clearTimeout(boundsTimer);
+        boundsTimer = setTimeout(emitBounds, 500);
+    });
+
+    emitBounds();
+}
+
+function emitBounds() {
+    if (!map) return;
+    const b = map.getBounds();
+    emit('bounds-changed', {
+        lat_min: b.getSouth(),
+        lat_max: b.getNorth(),
+        lng_min: b.getWest(),
+        lng_max: b.getEast(),
+    });
 }
 
 function updateMarkers() {

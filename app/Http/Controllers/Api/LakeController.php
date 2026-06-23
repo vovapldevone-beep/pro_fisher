@@ -6,16 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LakeResource;
 use App\Models\CatchRecord;
 use App\Models\Lake;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class LakeController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $lakes = Lake::query()
-            ->with(['photos' => fn ($query) => $query->orderByDesc('is_primary')->orderBy('sort_order')->limit(1)])
-            ->orderBy('name')
-            ->get();
+        $query = Lake::query()
+            ->with(['photos' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order')->limit(1)])
+            ->orderBy('name');
+
+        if ($request->filled(['lat_min', 'lat_max', 'lng_min', 'lng_max'])) {
+            $query
+                ->whereBetween('latitude',  [(float) $request->lat_min, (float) $request->lat_max])
+                ->whereBetween('longitude', [(float) $request->lng_min, (float) $request->lng_max]);
+        }
+
+        $lakes = $query->limit(150)->get();
 
         return LakeResource::collection($lakes);
     }
