@@ -27,12 +27,20 @@
                     </svg>
                 </button>
 
-                <router-link
-                    :to="authStore.isAuthenticated ? '/cabinet' : { name: 'login', query: { redirect: '/cabinet' } }"
+                <button
+                    type="button"
                     class="hidden rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:inline-block"
+                    @click="openAction('add-catch')"
                 >
-                    Додати улов
-                </router-link>
+                    + Улов
+                </button>
+                <button
+                    type="button"
+                    class="hidden rounded-lg border border-blue-400/60 px-4 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-400/10 sm:inline-block"
+                    @click="openAction('add-post')"
+                >
+                    + Пост
+                </button>
 
                 <template v-if="authStore.isAuthenticated">
                     <router-link
@@ -81,6 +89,14 @@ const allNavLinks = [
 const navLinks = computed(() =>
     authStore.isAuthenticated ? [] : allNavLinks.slice(0, 1)
 );
+
+function openAction(action) {
+    if (!authStore.isAuthenticated) {
+        router.push({ name: 'login', query: { redirect: `/cabinet?action=${action}` } });
+        return;
+    }
+    router.push({ path: '/cabinet', query: { action } });
+}
 
 async function handleLogout() {
     await authStore.logout();

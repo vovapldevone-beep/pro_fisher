@@ -8,10 +8,10 @@ export const useLakesStore = defineStore('lakes', () => {
     const loading = ref(false);
     const detailLoading = ref(false);
 
-    async function loadLakes() {
+    async function loadLakes(bounds = null) {
         loading.value = true;
         try {
-            lakes.value = await fetchLakes();
+            lakes.value = await fetchLakes(bounds);
         } finally {
             loading.value = false;
         }

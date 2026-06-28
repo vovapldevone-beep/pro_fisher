@@ -24,6 +24,7 @@
                         <RecentCatchesCard
                             :catches="cabinet.recent_catches"
                             @add-catch="showAddCatch = true"
+                            @add-post="showAddPost = true"
                         />
                     </div>
                     <div class="lg:col-span-4">
@@ -41,6 +42,13 @@
             @close="showAddCatch = false"
         />
 
+        <AddPostModal
+            :show="showAddPost"
+            :saving="catchesStore.saving"
+            @submit="handleAddPost"
+            @close="showAddPost = false"
+        />
+
         <EditProfileModal
             :show="showEditProfile"
             :profile="cabinet?.profile ?? {}"
@@ -51,11 +59,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { fetchCabinet } from '../api/cabinet';
 import AchievementsCard from '../components/cabinet/AchievementsCard.vue';
 import ActivityFeed from '../components/cabinet/ActivityFeed.vue';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
+import AddPostModal from '../components/cabinet/AddPostModal.vue';
 import EditProfileModal from '../components/cabinet/EditProfileModal.vue';
 import PermitsCard from '../components/cabinet/PermitsCard.vue';
 import ProfileCard from '../components/cabinet/ProfileCard.vue';
@@ -65,6 +75,8 @@ import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
 import { useLakesStore } from '../stores/lakes';
 
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const catchesStore = useCatchesStore();
 const lakesStore = useLakesStore();
@@ -72,6 +84,7 @@ const lakesStore = useLakesStore();
 const cabinet = ref(null);
 const loading = ref(true);
 const showAddCatch = ref(false);
+const showAddPost = ref(false);
 const showEditProfile = ref(false);
 
 async function loadCabinet() {
@@ -90,6 +103,12 @@ async function handleAddCatch(formData) {
     await loadCabinet();
 }
 
+async function handleAddPost(formData) {
+    await catchesStore.addCatch(formData);
+    showAddPost.value = false;
+    await loadCabinet();
+}
+
 function handleProfileSaved(updatedUser) {
     if (cabinet.value) {
         cabinet.value.profile.name = updatedUser.name;
@@ -98,6 +117,13 @@ function handleProfileSaved(updatedUser) {
     authStore.user.name = updatedUser.name;
     authStore.user.avatar_url = updatedUser.avatar_url;
 }
+
+watch(() => route.query.action, (action) => {
+    if (!action) return;
+    if (action === 'add-catch') showAddCatch.value = true;
+    if (action === 'add-post') showAddPost.value = true;
+    router.replace({ query: {} });
+}, { immediate: true });
 
 onMounted(async () => {
     await Promise.all([loadCabinet(), lakesStore.loadLakes()]);

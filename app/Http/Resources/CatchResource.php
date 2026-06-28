@@ -18,7 +18,9 @@ class CatchResource extends JsonResource
                 ? (str_starts_with($this->photo, 'http') ? $this->photo : asset('storage/'.$this->photo))
                 : null,
             'caught_at' => $this->caught_at?->format('Y-m-d'),
+            'type' => $this->type ?? 'catch',
             'notes' => $this->notes,
+            'location' => $this->location,
             'lake' => new LakeResource($this->whenLoaded('lake')),
             'user' => $this->when($this->relationLoaded('user'), fn () => [
                 'id' => $this->user->id,
@@ -28,6 +30,7 @@ class CatchResource extends JsonResource
             'likes_count' => $this->post_likes_count ?? 0,
             'is_liked' => $this->relationLoaded('postLikes') ? $this->postLikes->isNotEmpty() : false,
             'comments_count' => $this->catch_comments_count ?? 0,
+            'is_commented' => $this->relationLoaded('userComments') ? $this->userComments->isNotEmpty() : false,
             'created_at' => $this->created_at?->toISOString(),
         ];
     }
