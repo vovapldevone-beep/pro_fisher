@@ -3,16 +3,16 @@
         <div class="mb-6 flex items-center justify-between">
             <div>
                 <router-link to="/cabinet" class="text-sm text-emerald-700 hover:underline">
-                    ← Назад до кабінету
+                    {{ t('catch.backToCabinet') }}
                 </router-link>
-                <h1 class="mt-1 text-2xl font-bold text-slate-900">Мої улови</h1>
+                <h1 class="mt-1 text-2xl font-bold text-slate-900">{{ t('catch.myCatches') }}</h1>
             </div>
             <button
                 type="button"
                 class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
                 @click="editingCatch = null; showForm = true"
             >
-                + Додати улов
+                {{ t('catch.addBtn') }}
             </button>
         </div>
 
@@ -38,10 +38,13 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CatchForm from '../components/catches/CatchForm.vue';
 import CatchList from '../components/catches/CatchList.vue';
 import { useCatchesStore } from '../stores/catches';
 import { useLakesStore } from '../stores/lakes';
+
+const { t } = useI18n();
 
 const catchesStore = useCatchesStore();
 const lakesStore = useLakesStore();
@@ -64,7 +67,7 @@ async function handleSubmit(formData) {
 }
 
 async function handleDelete(catchItem) {
-    if (confirm('Видалити цей улов?')) {
+    if (confirm(t('catch.deleteConfirm'))) {
         await catchesStore.removeCatch(catchItem.id);
         if (editingCatch.value?.id === catchItem.id) {
             editingCatch.value = null;

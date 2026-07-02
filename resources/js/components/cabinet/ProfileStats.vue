@@ -12,6 +12,9 @@
 
 <script setup>
 import { computed, h } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     stats: {
@@ -45,15 +48,17 @@ const HeartIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', viewBox
 ]);
 
 const items = computed(() => [
-    { icon: HookIcon, value: props.stats.catches_count, label: 'уловів' },
-    { icon: LakeIcon, value: props.stats.lakes_visited, label: 'озер відвідано' },
+    { icon: HookIcon, value: props.stats.catches_count, label: t('stats.catches') },
+    { icon: LakeIcon, value: props.stats.lakes_visited, label: t('stats.lakesVisited') },
     {
         icon: FishIcon,
-        value: props.stats.biggest_fish_weight ? `${props.stats.biggest_fish_weight} кг` : '—',
-        label: props.stats.biggest_fish_name ? `найбільша риба ${props.stats.biggest_fish_name}` : 'найбільша риба',
+        value: props.stats.biggest_fish_weight ? `${props.stats.biggest_fish_weight} ${t('stats.kg')}` : '—',
+        label: props.stats.biggest_fish_name
+            ? `${t('stats.biggestFish')} ${props.stats.biggest_fish_name}`
+            : t('stats.biggestFish'),
     },
-    { icon: UsersIcon, value: props.stats.followers_count, label: 'підписників' },
-    { icon: HeartIcon, value: props.stats.total_likes ?? 0, label: 'лайків' },
-    { icon: TrophyIcon, value: `#${props.stats.ranking}`, label: 'місце в рейтингу' },
+    { icon: UsersIcon, value: props.stats.followers_count, label: t('stats.followers') },
+    { icon: HeartIcon, value: props.stats.total_likes ?? 0, label: t('stats.likes') },
+    { icon: TrophyIcon, value: `#${props.stats.ranking}`, label: t('stats.ranking') },
 ]);
 </script>

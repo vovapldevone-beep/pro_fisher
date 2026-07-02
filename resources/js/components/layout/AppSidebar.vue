@@ -22,7 +22,7 @@
             >
                 <component :is="GearIcon" class="h-6 w-6 shrink-0" />
                 <span class="whitespace-nowrap text-sm font-medium opacity-0 transition-opacity duration-150 delay-75 group-hover:opacity-100">
-                    Налаштування
+                    {{ t('nav.settings') }}
                 </span>
             </button>
         </div>
@@ -30,10 +30,12 @@
 </template>
 
 <script setup>
-import { h } from 'vue';
+import { computed, h } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
+const { t } = useI18n();
 
 const FishIcon = () =>
     h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', class: 'h-6 w-6 shrink-0' }, [
@@ -69,12 +71,12 @@ const SearchIcon = () =>
         h('line', { x1: '21', y1: '21', x2: '16.65', y2: '16.65' }),
     ]);
 
-const navItems = [
-    { to: '/cabinet', label: 'Моя рибалка', icon: FishIcon, exact: false },
-    { to: '/map', label: 'Карта озер', icon: MapPinIcon, exact: true },
-    { to: '/posts', label: 'Пости', icon: SearchIcon, exact: true },
-    { to: '/', label: 'Спільнота', icon: UsersIcon, exact: true },
-];
+const navItems = computed(() => [
+    { to: '/cabinet', label: t('nav.myFishing'), icon: FishIcon, exact: false },
+    { to: '/map', label: t('nav.lakeMap'), icon: MapPinIcon, exact: true },
+    { to: '/posts', label: t('nav.posts'), icon: SearchIcon, exact: true },
+    { to: '/', label: t('nav.community'), icon: UsersIcon, exact: true },
+]);
 
 function isActive(item) {
     if (item.exact) return route.path === item.to;

@@ -1,8 +1,8 @@
 <template>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900">Моя активність</h3>
-            <button type="button" class="text-sm text-blue-600 hover:underline">Переглянути всі</button>
+            <h3 class="font-bold text-slate-900">{{ t('cabinet.activity') }}</h3>
+            <button type="button" class="text-sm text-blue-600 hover:underline">{{ t('common.viewAll') }}</button>
         </div>
 
         <div class="space-y-4">
@@ -19,7 +19,7 @@
                     <span v-else>{{ typeEmoji(item.type) }}</span>
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm text-slate-700">{{ item.message }}</p>
+                    <p class="text-sm text-slate-700">{{ getMessage(item) }}</p>
                     <p class="mt-0.5 text-xs text-slate-400">{{ timeAgo(item.created_at) }}</p>
                 </div>
             </div>
@@ -28,12 +28,21 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 defineProps({
     activity: {
         type: Array,
         default: () => [],
     },
 });
+
+function getMessage(item) {
+    const key = `activity.${item.type}`;
+    return t(key, item.data ?? {});
+}
 
 function typeEmoji(type) {
     const map = { catch: '🎣', comment: '💬', achievement: '⭐', follower: '👤', following: '➕' };
@@ -56,8 +65,8 @@ function timeAgo(dateStr) {
     const diff = Date.now() - date.getTime();
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    if (hours < 1) return 'щойно';
-    if (hours < 24) return `${hours} год тому`;
-    return `${days} дн. тому`;
+    if (hours < 1) return t('time.justNow');
+    if (hours < 24) return t('time.hoursAgo', { hours });
+    return t('time.daysAgo', { days });
 }
 </script>

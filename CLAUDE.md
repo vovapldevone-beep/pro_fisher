@@ -53,9 +53,26 @@ Protected API routes use the `auth:sanctum` middleware.
 - Catch photos are stored on the `public` disk under `catches/`, managed in `CatchController` (old photo deleted on update). Avatars stored under `avatars/`.
 - `LakeController::buildPermitOptions()` calculates permit prices from `lake->price` with fixed multipliers (1×, 2.33×, 4×, 6.67× for 1/3/7/30 days).
 - `catches` table has `type` column (`catch`|`post`, default `catch`) and `location` (nullable string). Fields `lake_id`, `fish_name`, `caught_at` are nullable — required only when `type=catch` (validated in `StoreCatchRequest`).
+- `CatchRecordPolicy` uses `(int)` cast on both sides of comparison — MySQL can return `user_id` as string.
+- `CabinetController::buildActivity()` returns structured `data: {}` (not a pre-built Ukrainian string). Frontend translates via `t('activity.{type}', item.data)`.
 - `CatchResource` returns: `type`, `location`, `likes_count`, `is_liked`, `comments_count`, `is_commented`.
 - `HomeController::posts()` sorts by `created_at` DESC (not `caught_at`), eager-loads `lake:id,name,slug,latitude,longitude` for LocationBadge.
 - `User` model has `avatarUrl(): Attribute` accessor — converts storage path to full URL (non-http paths get `asset('storage/...')`).
+
+### Internationalisation
+
+Мови: **Українська (UA)** та **Польська (PL)**. Переключення через тоглер UA|PL в `AppHeader`.
+
+- **`resources/js/i18n.js`** — `createI18n({ legacy: false, locale: savedLocale })`. Мова зберігається в `localStorage('locale')`.
+- **`setLocale(locale)`** — міняє `i18n.global.locale.value`, `localStorage`, `document.documentElement.lang`.
+- **`resources/js/locales/uk.json`** та **`pl.json`** — переклади. Секції: `nav`, `header`, `modal`, `catch`, `post`, `posts`, `map`, `auth`, `common`, `cabinet`, `stats`, `time`, `activity`, `achievements`.
+- У компонентах: `const { t, te, locale } = useI18n()`. Для дат: `toLocaleDateString(locale.value === 'pl' ? 'pl-PL' : 'uk-UA')`.
+- Назви досягнень перекладаються за `achievement.id` через `te(`achievements.${id}.title`)` з fallback на значення з бекенду.
+- Активність: бекенд повертає `data: {}` (структуровані поля), фронтенд формує текст через `t('activity.{type}', item.data)`.
+
+### SEO мета-теги
+
+`@unhead/vue` v3 — ініціалізується в `app.js` як `createUnhead()` з ручним `app.provide(headSymbol, head)` (в v3 `createHead` перейменовано в `createUnhead`). `useHead()` з `computed()` використовується в `LakeDetailPage.vue` та `FisherPage.vue`.
 
 ### Frontend (`resources/js/`)
 
@@ -72,8 +89,11 @@ Route guards in `router/index.js` redirect unauthenticated users to `/login` (wi
 **Shared components** (`components/shared/`):
 - `UserAvatar.vue` — clickable avatar (own profile → `/cabinet`, other → `/fishers/:id`). Props: `user`, `size` (sm/md/lg).
 - `LocationBadge.vue` — semi-transparent blue badge linking to Google Maps. Props: `label`, `url`.
+- `ModalDialog.vue` — shared modal wrapper (overlay + header + footer buttons). Props: `show`, `title`, `saving`, `submitLabel`, `savingLabel`. Default slot = form body. Used by `AddCatchModal` and `AddPostModal`.
 
 **Opening modals from anywhere**: navigate to `/cabinet?action=add-catch` or `/cabinet?action=add-post`. `CabinetPage` watches `route.query.action` (immediate) and opens the modal, then clears the query. AppHeader uses this pattern for its "+ Улов" / "+ Пост" buttons.
+
+**Catch detail sidebar**: `components/posts/CatchDetailModal.vue` — fixed right-side panel (`fixed right-4 w-96 z-50`, top `65px`, slide animation). Shows photo, author, fish name/weight, location badge, date, likes/comments count, notes, comments list + input. Used in `PostsPage.vue` when a PostCard is clicked.
 
 ### Database
 

@@ -220,18 +220,22 @@ class CabinetController extends Controller
                 return match ($activity->type) {
                     'catch' => [
                         'type' => 'catch',
-                        'message' => "Ви додали улов {$d['fish_name']} {$d['weight']} кг на озері {$d['lake_name']}",
+                        'data' => [
+                            'fish_name' => $d['fish_name'] ?? '',
+                            'weight'    => $d['weight'] ?? '',
+                            'lake_name' => $d['lake_name'] ?? '',
+                        ],
                         'created_at' => $activity->created_at->toISOString(),
                     ],
                     'following' => [
                         'type' => 'following',
-                        'message' => "Ви підписались на {$d['following_name']}",
+                        'data' => ['name' => $d['following_name'] ?? ''],
                         'created_at' => $activity->created_at->toISOString(),
                     ],
                     'follower' => [
                         'type' => 'follower',
-                        'message' => "{$d['follower_name']} підписався на вас",
-                        'author_name' => $d['follower_name'],
+                        'data' => ['name' => $d['follower_name'] ?? ''],
+                        'author_name' => $d['follower_name'] ?? '',
                         'created_at' => $activity->created_at->toISOString(),
                     ],
                     default => null,

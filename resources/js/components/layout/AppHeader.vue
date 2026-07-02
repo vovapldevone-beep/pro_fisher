@@ -32,15 +32,36 @@
                     class="hidden rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:inline-block"
                     @click="openAction('add-catch')"
                 >
-                    + Улов
+                    {{ t('header.addCatch') }}
                 </button>
                 <button
                     type="button"
                     class="hidden rounded-lg border border-blue-400/60 px-4 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-400/10 sm:inline-block"
                     @click="openAction('add-post')"
                 >
-                    + Пост
+                    {{ t('header.addPost') }}
                 </button>
+
+                <!-- Language switcher -->
+                <div class="hidden items-center overflow-hidden rounded-lg border border-white/20 text-xs font-semibold sm:flex">
+                    <button
+                        type="button"
+                        class="px-2.5 py-1.5 transition"
+                        :class="locale === 'uk' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
+                        @click="setLocale('uk')"
+                    >
+                        UA
+                    </button>
+                    <span class="text-white/20">|</span>
+                    <button
+                        type="button"
+                        class="px-2.5 py-1.5 transition"
+                        :class="locale === 'pl' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
+                        @click="setLocale('pl')"
+                    >
+                        PL
+                    </button>
+                </div>
 
                 <template v-if="authStore.isAuthenticated">
                     <router-link
@@ -54,7 +75,7 @@
                         class="rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
                         @click="handleLogout"
                     >
-                        Вийти
+                        {{ t('header.logout') }}
                     </button>
                 </template>
                 <template v-else>
@@ -62,7 +83,7 @@
                         to="/login"
                         class="rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
                     >
-                        Увійти
+                        {{ t('header.login') }}
                     </router-link>
                 </template>
             </div>
@@ -73,21 +94,20 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
+import { setLocale } from '../../i18n';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const { t, locale } = useI18n();
 
-const allNavLinks = [
-    { to: '/map', label: 'Карта озер' },
-    { to: '/', label: 'Спільнота' },
-    { to: '/', label: 'Конкурси' },
-    { to: '/', label: 'Магазини' },
-    { to: '/', label: 'Блог' },
-];
+const allNavLinks = computed(() => [
+    { to: '/map', label: t('nav.lakeMap') },
+]);
 
 const navLinks = computed(() =>
-    authStore.isAuthenticated ? [] : allNavLinks.slice(0, 1)
+    authStore.isAuthenticated ? [] : allNavLinks.value.slice(0, 1)
 );
 
 function openAction(action) {

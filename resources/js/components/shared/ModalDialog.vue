@@ -1,0 +1,66 @@
+<template>
+    <Teleport to="body">
+        <div
+            v-if="show"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            @click.self="$emit('close')"
+        >
+            <div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+                <!-- Header -->
+                <div class="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <h2 class="font-semibold text-slate-900">{{ title }}</h2>
+                    <button
+                        type="button"
+                        class="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+                        @click="$emit('close')"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Body -->
+                <form class="flex-1 overflow-y-auto" @submit.prevent="$emit('submit')">
+                    <div class="space-y-4 px-6 py-5">
+                        <slot />
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex flex-shrink-0 gap-3 border-t border-slate-100 px-6 py-4">
+                        <button
+                            type="button"
+                            class="flex-1 rounded-lg border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            @click="$emit('close')"
+                        >
+                            {{ t('modal.cancel') }}
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="saving"
+                            class="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                            {{ saving ? (savingLabel || t('modal.saving')) : submitLabel }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </Teleport>
+</template>
+
+<script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
+defineProps({
+    show: { type: Boolean, default: false },
+    title: { type: String, required: true },
+    saving: { type: Boolean, default: false },
+    submitLabel: { type: String, default: '' },
+    savingLabel: { type: String, default: '' },
+});
+
+defineEmits(['close', 'submit']);
+</script>

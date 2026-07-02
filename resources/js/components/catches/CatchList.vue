@@ -1,11 +1,11 @@
 <template>
     <div>
-        <h2 class="mb-4 text-xl font-bold text-slate-900">Moje połowy</h2>
+        <h2 class="mb-4 text-xl font-bold text-slate-900">{{ t('catch.myCatches') }}</h2>
 
-        <div v-if="loading" class="text-slate-500">Ładowanie...</div>
+        <div v-if="loading" class="text-slate-500">{{ t('common.loading') }}</div>
 
         <div v-else-if="!catches.length" class="rounded-lg bg-slate-50 p-6 text-center text-slate-500">
-            Nie masz jeszcze żadnych połowów. Dodaj swój pierwszy!
+            {{ t('catch.noCatches') }}
         </div>
 
         <div v-else class="space-y-3">
@@ -40,14 +40,14 @@
                         class="rounded-lg px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
                         @click="$emit('edit', catchItem)"
                     >
-                        Edytuj
+                        {{ t('catch.edit') }}
                     </button>
                     <button
                         type="button"
                         class="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
                         @click="$emit('delete', catchItem)"
                     >
-                        Usuń
+                        {{ t('catch.delete') }}
                     </button>
                 </div>
             </div>
@@ -56,6 +56,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t, locale } = useI18n();
+
 defineProps({
     catches: {
         type: Array,
@@ -69,8 +73,10 @@ defineProps({
 
 defineEmits(['edit', 'delete']);
 
+const dateLocale = { uk: 'uk-UA', pl: 'pl-PL' };
+
 function formatDate(date) {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('pl-PL');
+    return new Date(date).toLocaleDateString(dateLocale[locale.value] || 'uk-UA');
 }
 </script>

@@ -1,8 +1,8 @@
 <template>
     <div>
-        <h3 class="mb-3 text-lg font-semibold text-slate-900">Ostatnie połowy</h3>
+        <h3 class="mb-3 text-lg font-semibold text-slate-900">{{ t('catch.recentOnLake') }}</h3>
         <div v-if="!catches?.length" class="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
-            Brak zarejestrowanych połowów na tym jeziorze.
+            {{ t('catch.noCatchesOnLake') }}
         </div>
         <div v-else class="space-y-3">
             <div
@@ -36,6 +36,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t, locale } = useI18n();
+
 defineProps({
     catches: {
         type: Array,
@@ -43,8 +47,10 @@ defineProps({
     },
 });
 
+const dateLocale = { uk: 'uk-UA', pl: 'pl-PL' };
+
 function formatDate(date) {
     if (!date) return '';
-    return new Date(date).toLocaleDateString('pl-PL');
+    return new Date(date).toLocaleDateString(dateLocale[locale.value] || 'uk-UA');
 }
 </script>
