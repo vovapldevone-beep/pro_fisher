@@ -1,9 +1,13 @@
 {
   "nav": {
     "myFishing": "Moje wędkarstwo",
+    "myFishingShort": "Gabinet",
     "lakeMap": "Mapa jezior",
+    "lakeMapShort": "Mapa",
     "posts": "Posty",
+    "postsShort": "Posty",
     "community": "Społeczność",
+    "communityShort": "Aktualności",
     "settings": "Ustawienia"
   },
   "header": {

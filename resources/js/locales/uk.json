@@ -1,9 +1,13 @@
 {
   "nav": {
     "myFishing": "Моя рибалка",
+    "myFishingShort": "Кабінет",
     "lakeMap": "Карта озер",
+    "lakeMapShort": "Карта",
     "posts": "Пости",
+    "postsShort": "Пости",
     "community": "Спільнота",
+    "communityShort": "Стрічка",
     "settings": "Налаштування"
   },
   "header": {

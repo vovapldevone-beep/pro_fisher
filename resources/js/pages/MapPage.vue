@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex h-[calc(100vh-65px)]">
+    <div class="relative flex h-full">
         <!-- Map (left, fills remaining space) -->
         <div class="relative min-w-0 flex-1">
             <button
