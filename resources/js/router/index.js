@@ -59,6 +59,12 @@ const routes = [
         component: () => import('../pages/AchievementsPage.vue'),
         meta: { requiresAuth: true },
     },
+    {
+        path: '/admin',
+        name: 'admin',
+        component: () => import('../pages/admin/AdminPage.vue'),
+        meta: { requiresAdmin: true },
+    },
 ];
 
 const router = createRouter({
@@ -78,6 +84,11 @@ router.beforeEach(async (to) => {
 
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         return { name: 'login', query: { redirect: to.fullPath } };
+    }
+
+    if (to.meta.requiresAdmin) {
+        if (!authStore.isAuthenticated) return { name: 'login' };
+        if (!authStore.user?.is_admin) return { name: 'home' };
     }
 
     if (to.meta.guest && authStore.isAuthenticated) {

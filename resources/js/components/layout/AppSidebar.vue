@@ -33,6 +33,9 @@
 import { computed, h } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '../../stores/auth';
+
+const authStore = useAuthStore();
 
 const route = useRoute();
 const { t } = useI18n();
@@ -71,12 +74,23 @@ const SearchIcon = () =>
         h('line', { x1: '21', y1: '21', x2: '16.65', y2: '16.65' }),
     ]);
 
-const navItems = computed(() => [
-    { to: '/cabinet', label: t('nav.myFishing'), icon: FishIcon, exact: false },
-    { to: '/map', label: t('nav.lakeMap'), icon: MapPinIcon, exact: true },
-    { to: '/posts', label: t('nav.posts'), icon: SearchIcon, exact: true },
-    { to: '/', label: t('nav.community'), icon: UsersIcon, exact: true },
-]);
+const ShieldIcon = () =>
+    h('svg', { viewBox: '0 0 24 24', fill: 'currentColor', class: 'h-6 w-6 shrink-0' }, [
+        h('path', { d: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l6 2.67V11c0 3.84-2.54 7.42-6 8.93C8.54 18.42 6 14.84 6 11V7.67L12 5z' }),
+    ]);
+
+const navItems = computed(() => {
+    const items = [
+        { to: '/cabinet', label: t('nav.myFishing'), icon: FishIcon, exact: false },
+        { to: '/map', label: t('nav.lakeMap'), icon: MapPinIcon, exact: true },
+        { to: '/posts', label: t('nav.posts'), icon: SearchIcon, exact: true },
+        { to: '/', label: t('nav.community'), icon: UsersIcon, exact: true },
+    ];
+    if (authStore.user?.is_admin) {
+        items.push({ to: '/admin', label: 'Адмін', icon: ShieldIcon, exact: false });
+    }
+    return items;
+});
 
 function isActive(item) {
     if (item.exact) return route.path === item.to;

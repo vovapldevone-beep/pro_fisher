@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CabinetController;
 use App\Http\Controllers\Api\CatchController;
@@ -40,4 +41,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/catches', [CatchController::class, 'store']);
     Route::put('/catches/{catchRecord}', [CatchController::class, 'update']);
     Route::delete('/catches/{catchRecord}', [CatchController::class, 'destroy']);
+
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/stats', [AdminController::class, 'stats']);
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::post('/users/{user}/block', [AdminController::class, 'blockUser']);
+        Route::post('/users/{user}/unblock', [AdminController::class, 'unblockUser']);
+        Route::get('/catches', [AdminController::class, 'catches']);
+        Route::delete('/catches/{catchRecord}', [AdminController::class, 'deleteCatch']);
+        Route::get('/lakes', [AdminController::class, 'lakes']);
+        Route::post('/lakes', [AdminController::class, 'storeLake']);
+    });
 });
