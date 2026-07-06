@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex h-full">
+    <div class="relative flex h-full overflow-hidden">
         <!-- Map (left, fills remaining space) -->
         <div class="relative min-w-0 flex-1">
             <button
@@ -16,6 +16,7 @@
                 :highlighted-slug="lakesStore.selectedLake?.slug"
                 @lake-selected="handleLakeSelected"
                 @bounds-changed="handleBoundsChanged"
+                @map-clicked="onMapClicked"
             />
         </div>
 
@@ -27,6 +28,15 @@
                 showCard ? 'hidden md:flex' : '',
             ]"
         >
+            <button
+                type="button"
+                class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 md:hidden"
+                @click="showList = false"
+            >
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+            </button>
             <LakeList
                 :lakes="lakesStore.lakes"
                 :loading="lakesStore.loading"
@@ -80,6 +90,10 @@ async function handleLakeSelected(lake) {
     await lakesStore.loadLake(lake.slug);
     router.replace({ query: { ...route.query, lake: lake.slug } });
     lakeMapRef.value?.flyToLake(lake);
+}
+
+function onMapClicked() {
+    if (showList.value) showList.value = false;
 }
 
 function closeCard() {
