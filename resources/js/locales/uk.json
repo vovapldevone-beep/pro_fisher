@@ -155,5 +155,15 @@
     "catch": "Ви додали улов {fish_name} {weight} кг на озері {lake_name}",
     "following": "Ви підписались на {name}",
     "follower": "{name} підписався на вас"
+  },
+  "fisher": {
+    "publications": "Публікації",
+    "posts": "Пости",
+    "catches": "Улови",
+    "achievements": "Досягнення",
+    "follow": "+ Підписатись",
+    "unfollow": "Відписатись",
+    "empty": "Ще немає публікацій",
+    "loading": "Завантаження..."
   }
 }

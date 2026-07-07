@@ -155,5 +155,15 @@
     "catch": "Dodałeś połów {fish_name} {weight} kg na jeziorze {lake_name}",
     "following": "Zacząłeś obserwować {name}",
     "follower": "{name} zaczął Cię obserwować"
+  },
+  "fisher": {
+    "publications": "Publikacje",
+    "posts": "Posty",
+    "catches": "Połowy",
+    "achievements": "Osiągnięcia",
+    "follow": "+ Obserwuj",
+    "unfollow": "Przestań obserwować",
+    "empty": "Brak publikacji",
+    "loading": "Ładowanie..."
   }
 }

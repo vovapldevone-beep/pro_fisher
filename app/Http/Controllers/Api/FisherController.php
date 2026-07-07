@@ -7,6 +7,7 @@ use App\Http\Resources\CatchResource;
 use App\Models\Activity;
 use App\Models\CatchRecord;
 use App\Models\Follow;
+use App\Models\PostLike;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class FisherController extends Controller
         $biggestCatch = $catches->sortByDesc('weight')->first();
         $photosCount = $catches->whereNotNull('photo')->count();
         $followersCount = Follow::where('following_id', $user->id)->count();
+        $totalLikes = PostLike::whereIn('catch_id', $catches->pluck('id'))->count();
 
         $isFollowing = $request->user()
             ? Follow::where('follower_id', $request->user()->id)->where('following_id', $user->id)->exists()
@@ -35,7 +37,6 @@ class FisherController extends Controller
             'profile' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'location' => $user->location,
                 'bio' => $user->bio,
                 'avatar_url' => $user->avatar_url,
                 'badge' => $user->badge,
@@ -46,10 +47,10 @@ class FisherController extends Controller
                 'biggest_fish_weight' => $biggestCatch?->weight,
                 'biggest_fish_name' => $biggestCatch?->fish_name,
                 'followers_count' => $followersCount,
+                'total_likes' => $totalLikes,
                 'ranking' => 0,
             ],
             'achievements' => $this->buildAchievements($catchesCount, $lakesVisited, $photosCount, $biggestCatch),
-            'recent_catches' => CatchResource::collection($catches->take(4)),
             'is_following' => $isFollowing,
         ]);
     }
@@ -92,6 +93,36 @@ class FisherController extends Controller
             ->delete();
 
         return response()->json(['following' => false]);
+    }
+
+    public function posts(User $user, Request $request): JsonResponse
+    {
+        $userId = $request->user()?->id;
+
+        $query = CatchRecord::query()
+            ->where('user_id', $user->id)
+            ->with(['lake:id,name,slug,latitude,longitude'])
+            ->withCount(['postLikes', 'catchComments'])
+            ->when($userId, fn ($q) => $q->with([
+                'postLikes'    => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
+                'userComments' => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
+            ]))
+            ->latest('created_at');
+
+        if (in_array($request->type, ['post', 'catch'])) {
+            $query->where('type', $request->type);
+        }
+
+        $paginated = $query->paginate(12);
+
+        return response()->json([
+            'data' => CatchResource::collection($paginated),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'total'        => $paginated->total(),
+            ],
+        ]);
     }
 
     private function buildAchievements(int $catchesCount, int $lakesVisited, int $photosCount, ?CatchRecord $biggestCatch): array

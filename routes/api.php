@@ -23,6 +23,7 @@ Route::get('/lakes', [LakeController::class, 'index']);
 Route::get('/lakes/{lake}', [LakeController::class, 'show']);
 
 Route::get('/fishers/{user}', [FisherController::class, 'show']);
+Route::get('/fishers/{user}/posts', [FisherController::class, 'posts']);
 Route::get('/catches/{catchRecord}/comments', [CommentController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {

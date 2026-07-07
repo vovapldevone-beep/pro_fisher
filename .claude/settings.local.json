@@ -33,7 +33,9 @@
       "Bash(grep -oE \"body[^{]*\\\\{[^}]{1,200}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
       "Bash(grep -oE \"\\\\*,[^{]*\\\\{[^}]{1,500}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
       "Bash(grep -oE \"[a-z,: ]{0,30}overflow[^;]{0,40}\")",
-      "Bash(grep -oE \"\\\\*[^{]*\\\\{[^}]{1,600}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)"
+      "Bash(grep -oE \"\\\\*[^{]*\\\\{[^}]{1,600}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
+      "Bash(xargs ls -la)",
+      "Bash(php -l /home/qwas/projects/pro_fisher/app/Http/Controllers/Api/FisherController.php)"
     ]
   }
 }

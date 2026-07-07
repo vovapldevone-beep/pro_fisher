@@ -19,7 +19,16 @@
                     <span v-else>{{ typeEmoji(item.type) }}</span>
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-sm text-slate-700">{{ getMessage(item) }}</p>
+                    <p class="text-sm text-slate-700">
+                        <template v-for="(part, i) in getMessageParts(item)" :key="i">
+                            <router-link
+                                v-if="part.to"
+                                :to="part.to"
+                                class="font-semibold text-emerald-600 hover:underline"
+                            >{{ part.text }}</router-link>
+                            <span v-else>{{ part.text }}</span>
+                        </template>
+                    </p>
                     <p class="mt-0.5 text-xs text-slate-400">{{ timeAgo(item.created_at) }}</p>
                 </div>
             </div>
@@ -39,9 +48,23 @@ defineProps({
     },
 });
 
-function getMessage(item) {
-    const key = `activity.${item.type}`;
-    return t(key, item.data ?? {});
+function getMessageParts(item) {
+    const { type, data = {} } = item;
+    const name = data.name || '';
+    const userId = data.id;
+
+    if ((type === 'following' || type === 'follower') && name && userId) {
+        const fullMsg = t(`activity.${type}`, data);
+        const idx = fullMsg.indexOf(name);
+        if (idx === -1) return [{ text: fullMsg }];
+        return [
+            idx > 0 ? { text: fullMsg.slice(0, idx) } : null,
+            { text: name, to: `/fishers/${userId}` },
+            idx + name.length < fullMsg.length ? { text: fullMsg.slice(idx + name.length) } : null,
+        ].filter(Boolean);
+    }
+
+    return [{ text: t(`activity.${type}`, data) }];
 }
 
 function typeEmoji(type) {

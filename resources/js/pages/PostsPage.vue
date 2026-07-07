@@ -15,7 +15,7 @@
                         type="button"
                         class="rounded-full px-4 py-1.5 text-sm font-medium transition"
                         :class="activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                        @click="activeFilter = 'all'"
+                        @click="activeFilter = 'all'; typeFilter = 'all'"
                     >
                         {{ t('posts.all') }}
                     </button>
@@ -26,7 +26,7 @@
                             type="button"
                             class="px-4 py-1.5 transition"
                             :class="typeFilter === 'post' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
-                            @click="typeFilter = typeFilter === 'post' ? 'all' : 'post'"
+                            @click="typeFilter = typeFilter === 'post' ? 'all' : 'post'; activeFilter = typeFilter === 'all' ? 'all' : 'none'"
                         >
                             {{ t('posts.postsFilter') }}
                         </button>
@@ -35,7 +35,7 @@
                             type="button"
                             class="px-4 py-1.5 transition"
                             :class="typeFilter === 'catch' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
-                            @click="typeFilter = typeFilter === 'catch' ? 'all' : 'catch'"
+                            @click="typeFilter = typeFilter === 'catch' ? 'all' : 'catch'; activeFilter = typeFilter === 'all' ? 'all' : 'none'"
                         >
                             {{ t('posts.catchesFilter') }}
                         </button>

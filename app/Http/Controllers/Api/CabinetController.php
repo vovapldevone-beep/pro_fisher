@@ -229,12 +229,18 @@ class CabinetController extends Controller
                     ],
                     'following' => [
                         'type' => 'following',
-                        'data' => ['name' => $d['following_name'] ?? ''],
+                        'data' => [
+                            'name' => $d['following_name'] ?? '',
+                            'id'   => $d['following_id'] ?? null,
+                        ],
                         'created_at' => $activity->created_at->toISOString(),
                     ],
                     'follower' => [
                         'type' => 'follower',
-                        'data' => ['name' => $d['follower_name'] ?? ''],
+                        'data' => [
+                            'name' => $d['follower_name'] ?? '',
+                            'id'   => $d['follower_id'] ?? null,
+                        ],
                         'author_name' => $d['follower_name'] ?? '',
                         'created_at' => $activity->created_at->toISOString(),
                     ],
