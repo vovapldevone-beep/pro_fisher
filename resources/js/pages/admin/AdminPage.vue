@@ -194,6 +194,7 @@
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Координати</th>
                                 <th class="px-4 py-3 text-center font-semibold text-slate-600">Ціна / доба</th>
                                 <th class="px-4 py-3 text-center font-semibold text-slate-600">Дата</th>
+                                <th class="px-4 py-3 text-center font-semibold text-slate-600">Дія</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -224,6 +225,25 @@
                                     {{ lake.price ? `${lake.price} PLN` : '—' }}
                                 </td>
                                 <td class="px-4 py-3 text-center text-slate-400">{{ lake.created_at }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <button
+                                            type="button"
+                                            class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 transition"
+                                            @click="editingLake = lake; showAddLake = true"
+                                        >
+                                            Редагувати
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
+                                            :disabled="deletingLakeId === lake.id"
+                                            @click="handleDeleteLake(lake)"
+                                        >
+                                            {{ deletingLakeId === lake.id ? '...' : 'Видалити' }}
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -234,10 +254,11 @@
 
     </div>
 
-    <!-- Add Lake Modal -->
+    <!-- Add / Edit Lake Modal -->
     <AddLakeModal
         v-if="showAddLake"
-        @close="showAddLake = false"
+        :lake="editingLake"
+        @close="showAddLake = false; editingLake = null"
         @saved="onLakeSaved"
     />
 </template>
@@ -247,7 +268,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import {
     adminDeleteCatch,
     blockUser,
-    createLake,
+    deleteLake,
     fetchAdminCatches,
     fetchAdminLakes,
     fetchAdminStats,
@@ -364,6 +385,8 @@ const lakesPage = ref(1);
 const lakesLastPage = ref(1);
 const lakesTotal = ref(0);
 const showAddLake = ref(false);
+const editingLake = ref(null);
+const deletingLakeId = ref(null);
 
 async function loadLakes(page = 1) {
     loadingLakes.value = true;
@@ -378,11 +401,30 @@ async function loadLakes(page = 1) {
     }
 }
 
-function onLakeSaved(lake) {
+function onLakeSaved(lake, wasEdit) {
     showAddLake.value = false;
-    lakes.value.unshift(lake);
-    lakesTotal.value++;
+    editingLake.value = null;
+    if (wasEdit) {
+        const idx = lakes.value.findIndex(l => l.id === lake.id);
+        if (idx !== -1) lakes.value[idx] = lake;
+    } else {
+        lakes.value.unshift(lake);
+        lakesTotal.value++;
+    }
     loadStats();
+}
+
+async function handleDeleteLake(lake) {
+    if (!confirm(`Видалити озеро «${lake.name}»? Улови користувачів збережуться, але втратять прив'язку до озера.`)) return;
+    deletingLakeId.value = lake.id;
+    try {
+        await deleteLake(lake.id);
+        lakes.value = lakes.value.filter(l => l.id !== lake.id);
+        lakesTotal.value--;
+        await loadStats();
+    } finally {
+        deletingLakeId.value = null;
+    }
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────────

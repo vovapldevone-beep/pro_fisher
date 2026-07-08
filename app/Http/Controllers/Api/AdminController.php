@@ -59,7 +59,121 @@ class AdminController extends Controller
 
     public function storeLake(Request $request): JsonResponse
     {
-        $validated = $request->validate([
+        $validated = $this->validateLake($request);
+
+        $validated['slug'] = $this->uniqueSlug($validated['name']);
+
+        $lake = Lake::create($validated);
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $index => $file) {
+                $path = $file->store('lakes', 'public');
+                LakePhoto::create([
+                    'lake_id'    => $lake->id,
+                    'path'       => $path,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            }
+        }
+
+        return response()->json(['lake' => $this->lakeRow($lake)], 201);
+    }
+
+    public function showLake(Lake $lake): JsonResponse
+    {
+        return response()->json([
+            'lake' => [
+                'id'              => $lake->id,
+                'name'            => $lake->name,
+                'slug'            => $lake->slug,
+                'description'     => $lake->description,
+                'latitude'        => $lake->latitude,
+                'longitude'       => $lake->longitude,
+                'price'           => $lake->price,
+                'region'          => $lake->region,
+                'address'         => $lake->address,
+                'fish_species'    => $lake->fish_species,
+                'area_ha'         => $lake->area_ha,
+                'max_depth_m'     => $lake->max_depth_m,
+                'permit_required' => $lake->permit_required,
+                'admin_name'      => $lake->admin_name,
+                'admin_phone'     => $lake->admin_phone,
+                'admin_website'   => $lake->admin_website,
+                'rules'           => $lake->rules,
+                'photos'          => $lake->photos->map(fn (LakePhoto $p) => [
+                    'id'         => $p->id,
+                    'url'        => str_starts_with($p->path, 'http') ? $p->path : asset('storage/'.$p->path),
+                    'is_primary' => $p->is_primary,
+                ]),
+            ],
+        ]);
+    }
+
+    public function updateLake(Request $request, Lake $lake): JsonResponse
+    {
+        $validated = $this->validateLake($request);
+
+        if ($validated['name'] !== $lake->name) {
+            $validated['slug'] = $this->uniqueSlug($validated['name'], $lake->id);
+        }
+
+        $lake->update($validated);
+
+        // Delete removed photos
+        $deletedIds = $request->input('deleted_photo_ids', []);
+        if ($deletedIds) {
+            $toDelete = $lake->photos()->whereIn('id', $deletedIds)->get();
+            foreach ($toDelete as $photo) {
+                if (! str_starts_with($photo->path, 'http')) {
+                    Storage::disk('public')->delete($photo->path);
+                }
+                $photo->delete();
+            }
+        }
+
+        // Append new photos
+        if ($request->hasFile('photos')) {
+            $maxSort = (int) $lake->photos()->max('sort_order');
+            foreach ($request->file('photos') as $index => $file) {
+                $path = $file->store('lakes', 'public');
+                LakePhoto::create([
+                    'lake_id'    => $lake->id,
+                    'path'       => $path,
+                    'is_primary' => false,
+                    'sort_order' => $maxSort + $index + 1,
+                ]);
+            }
+        }
+
+        // Ensure a primary photo exists
+        $lake->load('photos');
+        if ($lake->photos->isNotEmpty() && ! $lake->photos->contains('is_primary', true)) {
+            $lake->photos->first()->update(['is_primary' => true]);
+        }
+
+        return response()->json(['lake' => $this->lakeRow($lake)]);
+    }
+
+    public function deleteLake(Lake $lake): JsonResponse
+    {
+        // Detach catches so user content survives (FK would cascade-delete them)
+        CatchRecord::where('lake_id', $lake->id)->update(['lake_id' => null]);
+
+        foreach ($lake->photos as $photo) {
+            if (! str_starts_with($photo->path, 'http')) {
+                Storage::disk('public')->delete($photo->path);
+            }
+        }
+
+        $lake->delete();
+
+        return response()->json(['message' => 'Deleted']);
+    }
+
+    private function validateLake(Request $request): array
+    {
+        return $request->validate([
             'name'            => 'required|string|max:255',
             'description'     => 'nullable|string',
             'latitude'        => 'required|numeric|between:-90,90',
@@ -77,45 +191,41 @@ class AdminController extends Controller
             'rules'           => 'nullable|string',
             'photos'          => 'nullable|array|max:10',
             'photos.*'        => 'image|max:5120',
+            'deleted_photo_ids'   => 'nullable|array',
+            'deleted_photo_ids.*' => 'integer',
         ]);
+    }
 
-        $base = Str::slug($validated['name']);
+    private function uniqueSlug(string $name, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($name);
         $slug = $base;
         $i = 1;
-        while (Lake::where('slug', $slug)->exists()) {
+        while (Lake::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
             $slug = $base . '-' . $i++;
         }
-        $validated['slug'] = $slug;
 
-        $lake = Lake::create($validated);
+        return $slug;
+    }
 
-        if ($request->hasFile('photos')) {
-            foreach ($request->file('photos') as $index => $file) {
-                $path = $file->store('lakes', 'public');
-                LakePhoto::create([
-                    'lake_id'    => $lake->id,
-                    'path'       => $path,
-                    'is_primary' => $index === 0,
-                    'sort_order' => $index,
-                ]);
-            }
-        }
+    private function lakeRow(Lake $lake): array
+    {
+        $primary = $lake->photos()->where('is_primary', true)->first()
+            ?? $lake->photos()->orderBy('sort_order')->first();
 
-        $photoUrl = $lake->photos()->orderBy('sort_order')->first()?->path;
-
-        return response()->json([
-            'lake' => [
-                'id'        => $lake->id,
-                'name'      => $lake->name,
-                'slug'      => $lake->slug,
-                'region'    => $lake->region,
-                'latitude'  => $lake->latitude,
-                'longitude' => $lake->longitude,
-                'price'     => $lake->price,
-                'photo_url' => $photoUrl ? asset('storage/'.$photoUrl) : null,
-                'created_at'=> $lake->created_at->toDateString(),
-            ],
-        ], 201);
+        return [
+            'id'        => $lake->id,
+            'name'      => $lake->name,
+            'slug'      => $lake->slug,
+            'region'    => $lake->region,
+            'latitude'  => $lake->latitude,
+            'longitude' => $lake->longitude,
+            'price'     => $lake->price,
+            'photo_url' => $primary
+                ? (str_starts_with($primary->path, 'http') ? $primary->path : asset('storage/'.$primary->path))
+                : null,
+            'created_at'=> $lake->created_at->toDateString(),
+        ];
     }
 
     public function users(Request $request): JsonResponse

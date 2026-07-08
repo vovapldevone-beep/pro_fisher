@@ -52,5 +52,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/catches/{catchRecord}', [AdminController::class, 'deleteCatch']);
         Route::get('/lakes', [AdminController::class, 'lakes']);
         Route::post('/lakes', [AdminController::class, 'storeLake']);
+        Route::get('/lakes/{lake:id}', [AdminController::class, 'showLake']);
+        Route::post('/lakes/{lake:id}', [AdminController::class, 'updateLake']);
+        Route::delete('/lakes/{lake:id}', [AdminController::class, 'deleteLake']);
     });
 });

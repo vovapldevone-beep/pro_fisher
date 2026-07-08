@@ -43,7 +43,7 @@ Protected API routes use the `auth:sanctum` middleware.
 
 ### Backend (`app/`)
 
-- **Controllers** live in `app/Http/Controllers/Api/`: `AuthController`, `HomeController`, `LakeController`, `CatchController`, `CabinetController`, `FisherController`, `LikeController`, `CommentController`.
+- **Controllers** live in `app/Http/Controllers/Api/`: `AuthController`, `HomeController`, `LakeController`, `CatchController`, `CabinetController`, `FisherController`, `LikeController`, `CommentController`, `AdminController`.
 - **Form Requests** (`app/Http/Requests/`) handle validation before controllers.
 - **API Resources** (`app/Http/Resources/`) shape JSON responses — `LakeResource` conditionally includes relations using `whenLoaded`/`when`.
 - **Policies** (`app/Policies/CatchRecordPolicy`) gate `update`/`delete` to the owner only; `CatchController` calls `$this->authorize(...)`.
@@ -54,10 +54,13 @@ Protected API routes use the `auth:sanctum` middleware.
 - `LakeController::buildPermitOptions()` calculates permit prices from `lake->price` with fixed multipliers (1×, 2.33×, 4×, 6.67× for 1/3/7/30 days).
 - `catches` table has `type` column (`catch`|`post`, default `catch`) and `location` (nullable string). Fields `lake_id`, `fish_name`, `caught_at` are nullable — required only when `type=catch` (validated in `StoreCatchRequest`).
 - `CatchRecordPolicy` uses `(int)` cast on both sides of comparison — MySQL can return `user_id` as string.
-- `CabinetController::buildActivity()` returns structured `data: {}` (not a pre-built Ukrainian string). Frontend translates via `t('activity.{type}', item.data)`.
+- `CabinetController::buildActivity()` returns structured `data: {}` (not a pre-built Ukrainian string). Frontend translates via `t('activity.{type}', item.data)`. For `following`/`follower` types `data` includes `id` (user id) — `ActivityFeed.vue` splits the translated message and renders the name as a `<router-link to="/fishers/{id}">`.
 - `CatchResource` returns: `type`, `location`, `likes_count`, `is_liked`, `comments_count`, `is_commented`.
 - `HomeController::posts()` sorts by `created_at` DESC (not `caught_at`), eager-loads `lake:id,name,slug,latitude,longitude` for LocationBadge.
 - `User` model has `avatarUrl(): Attribute` accessor — converts storage path to full URL (non-http paths get `asset('storage/...')`).
+- `FisherController::show()` returns profile (no `location`/`joined_at`), stats (incl. `total_likes`), achievements, `is_following`. `FisherController::posts()` — `GET /api/fishers/{user}/posts?page=&type=post|catch` — paginated (12/page) catches+posts with `meta: {current_page, last_page, total}`; used by FisherPage infinite scroll.
+- **Admin panel**: `AdminController` behind `admin` middleware, prefix `/api/admin`. Endpoints: `stats` (users/catches/comments/likes/lakes counts), `users` + block/unblock, `catches` + delete, `lakes` (paginated, primary photo eager-loaded) + `storeLake` (validates lake fields + up to 10 photos ≤5MB, generates unique slug via `Str::slug`, stores photos on `public` disk under `lakes/`, first photo `is_primary`).
+- `LakePhoto` model — `lake_photos` table: `lake_id`, `path`, `is_primary`, `sort_order`.
 
 ### Internationalisation
 
@@ -65,7 +68,7 @@ Protected API routes use the `auth:sanctum` middleware.
 
 - **`resources/js/i18n.js`** — `createI18n({ legacy: false, locale: savedLocale })`. Мова зберігається в `localStorage('locale')`.
 - **`setLocale(locale)`** — міняє `i18n.global.locale.value`, `localStorage`, `document.documentElement.lang`.
-- **`resources/js/locales/uk.json`** та **`pl.json`** — переклади. Секції: `nav`, `header`, `modal`, `catch`, `post`, `posts`, `map`, `auth`, `common`, `cabinet`, `stats`, `time`, `activity`, `achievements`.
+- **`resources/js/locales/uk.json`** та **`pl.json`** — переклади. Секції: `nav`, `header`, `modal`, `catch`, `post`, `posts`, `map`, `auth`, `common`, `cabinet`, `stats`, `time`, `activity`, `achievements`, `fisher`.
 - У компонентах: `const { t, te, locale } = useI18n()`. Для дат: `toLocaleDateString(locale.value === 'pl' ? 'pl-PL' : 'uk-UA')`.
 - Назви досягнень перекладаються за `achievement.id` через `te(`achievements.${id}.title`)` з fallback на значення з бекенду.
 - Активність: бекенд повертає `data: {}` (структуровані поля), фронтенд формує текст через `t('activity.{type}', item.data)`.
@@ -86,6 +89,14 @@ Protected API routes use the `auth:sanctum` middleware.
 
 Route guards in `router/index.js` redirect unauthenticated users to `/login` (with `redirect` query param). Auth is restored on page reload via `authReady` flag — `fetchUser()` called once before first navigation.
 
+**App layout (`App.vue`)**: root div is `flex flex-col` with `height: 100dvh` and `overflow-hidden`; `<main>` has `min-h-0 flex-1 overflow-y-auto` — content scrolls inside main, not the body. Mobile bottom nav is a **static flex child** (`shrink-0 md:hidden`) at the bottom of the column — no `position: fixed` (fixed positioning was unreliable on mobile). Nav items with icons defined directly in App.vue. `AppSidebar.vue` is desktop-only (`hidden md:flex`, fixed left, expands on hover). Full-height pages (MapPage) use `h-full`, not `calc(100vh-...)`.
+
+**FisherPage** (`/fishers/:id`): profile card (avatar, name, @handle, bio, follow/unfollow, 6 stat items) + tab bar (Публікації / Пости / Улови / Досягнення) + 4-column card grid (2 on mobile) with like/comment counts. Infinite scroll via `IntersectionObserver` on a sentinel div → `fetchFisherPosts(id, {page, type})`. Card click opens `CatchDetailModal`. Own id redirects to `/cabinet`.
+
+**Admin panel** (`/admin`, `pages/admin/`): `AdminPage.vue` with tabs (dashboard stats / users / content / lakes), `AddLakeModal.vue` — lake creation form with Leaflet map coordinate picker (click sets lat/lng marker) and multi-photo upload (drag-and-drop, previews via `URL.createObjectURL`, FormData multipart submit). Admin link shown in nav only for `user.is_admin`.
+
+**PostsPage filters**: "Всі" resets both `activeFilter` and `typeFilter`; activating Пости/Улови sets `activeFilter = 'none'` (removes green from "Всі"); deactivating restores `'all'`.
+
 **Shared components** (`components/shared/`):
 - `UserAvatar.vue` — clickable avatar (own profile → `/cabinet`, other → `/fishers/:id`). Props: `user`, `size` (sm/md/lg).
 - `LocationBadge.vue` — semi-transparent blue badge linking to Google Maps. Props: `label`, `url`.
@@ -105,6 +116,7 @@ Key tables:
 - `catch_comments` — `catch_id`, `user_id`, `body`
 - `activities` — `user_id`, `type` (catch/following/follower), `data` (JSON)
 - `follows` — `follower_id`, `following_id` (unique together)
+- `lake_photos` — `lake_id`, `path`, `is_primary`, `sort_order`
 
 ### Known hardcoded values
 

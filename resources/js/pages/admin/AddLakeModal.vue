@@ -4,7 +4,7 @@
 
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                <h2 class="text-lg font-semibold text-slate-900">Додати озеро</h2>
+                <h2 class="text-lg font-semibold text-slate-900">{{ isEdit ? 'Редагувати озеро' : 'Додати озеро' }}</h2>
                 <button type="button" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600" @click="$emit('close')">
                     <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
@@ -28,15 +28,38 @@
                     </label>
 
                     <!-- Previews -->
-                    <div v-if="photos.length" class="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+                    <div v-if="existingPhotos.length || photos.length" class="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+                        <!-- Existing photos (edit mode) -->
+                        <div
+                            v-for="p in existingPhotos"
+                            :key="'existing-' + p.id"
+                            class="group relative aspect-square"
+                        >
+                            <img :src="p.url" class="h-full w-full rounded-xl object-cover" />
+                            <span v-if="p.is_primary"
+                                class="absolute left-1.5 top-1.5 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow">
+                                Головна
+                            </span>
+                            <button
+                                type="button"
+                                class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
+                                @click="removeExistingPhoto(p)"
+                            >
+                                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M18 6 6 18M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- New photos -->
                         <div
                             v-for="(p, idx) in photos"
                             :key="p.id"
                             class="group relative aspect-square"
                         >
                             <img :src="p.preview" class="h-full w-full rounded-xl object-cover" />
-                            <!-- Primary badge -->
-                            <span v-if="idx === 0"
+                            <!-- Primary badge (only when no existing photos remain) -->
+                            <span v-if="idx === 0 && !existingPhotos.length"
                                 class="absolute left-1.5 top-1.5 rounded-md bg-emerald-500 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow">
                                 Головна
                             </span>
@@ -54,7 +77,7 @@
 
                         <!-- Add more button (if < 10) -->
                         <button
-                            v-if="photos.length < 10"
+                            v-if="totalPhotoCount < 10"
                             type="button"
                             class="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-slate-400 transition hover:border-emerald-400 hover:text-emerald-500"
                             @click="fileInput.click()"
@@ -65,7 +88,7 @@
 
                     <!-- Upload zone (empty state) -->
                     <div
-                        v-if="!photos.length"
+                        v-if="!photos.length && !existingPhotos.length"
                         class="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-8 transition"
                         :class="dragging ? 'border-emerald-400 bg-emerald-50' : 'hover:border-slate-300'"
                         @dragover.prevent="dragging = true"
@@ -216,7 +239,7 @@
                     class="rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-600 disabled:opacity-50 transition"
                     :disabled="saving"
                     @click="save">
-                    {{ saving ? 'Збереження...' : 'Зберегти озеро' }}
+                    {{ saving ? 'Збереження...' : (isEdit ? 'Зберегти зміни' : 'Зберегти озеро') }}
                 </button>
             </div>
 
@@ -225,11 +248,17 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import L from 'leaflet';
-import { createLake } from '../../api/admin';
+import { createLake, fetchAdminLake, updateLake } from '../../api/admin';
+
+const props = defineProps({
+    lake: { type: Object, default: null },
+});
 
 const emit = defineEmits(['close', 'saved']);
+
+const isEdit = computed(() => !!props.lake);
 
 const mapEl = ref(null);
 const fileInput = ref(null);
@@ -240,6 +269,12 @@ const dragging = ref(false);
 // Each entry: { id, file, preview }
 const photos = ref([]);
 let photoIdCounter = 0;
+
+// Edit mode: { id, url, is_primary } from server
+const existingPhotos = ref([]);
+const deletedPhotoIds = ref([]);
+
+const totalPhotoCount = computed(() => existingPhotos.value.length + photos.value.length);
 
 const form = reactive({
     name: '',
@@ -286,7 +321,65 @@ onMounted(async () => {
         form.longitude = parseFloat(lng.toFixed(7));
         placeMarker(lat, lng);
     });
+
+    if (isEdit.value) {
+        await loadLake();
+    } else {
+        restoreDraft();
+    }
 });
+
+// ── Draft persistence (create mode only) ─────────────────────────────────────
+const DRAFT_KEY = 'admin_lake_draft';
+
+function restoreDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        Object.keys(form).forEach(key => {
+            if (key in draft) form[key] = draft[key];
+        });
+        if (form.latitude && form.longitude) {
+            placeMarker(form.latitude, form.longitude);
+        }
+    } catch {
+        localStorage.removeItem(DRAFT_KEY);
+    }
+}
+
+watch(form, () => {
+    if (isEdit.value) return;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+}, { deep: true });
+
+async function loadLake() {
+    try {
+        const { lake } = await fetchAdminLake(props.lake.id);
+        form.name = lake.name || '';
+        form.description = lake.description || '';
+        form.latitude = lake.latitude !== null ? Number(lake.latitude) : null;
+        form.longitude = lake.longitude !== null ? Number(lake.longitude) : null;
+        form.region = lake.region || '';
+        form.address = lake.address || '';
+        form.fish_species = lake.fish_species || '';
+        form.area_ha = lake.area_ha;
+        form.max_depth_m = lake.max_depth_m;
+        form.price = lake.price !== null ? Number(lake.price) : null;
+        form.permit_required = !!lake.permit_required;
+        form.admin_name = lake.admin_name || '';
+        form.admin_phone = lake.admin_phone || '';
+        form.admin_website = lake.admin_website || '';
+        form.rules = lake.rules || '';
+        existingPhotos.value = lake.photos || [];
+
+        if (form.latitude && form.longitude) {
+            placeMarker(form.latitude, form.longitude);
+        }
+    } catch {
+        error.value = 'Не вдалося завантажити дані озера.';
+    }
+}
 
 onUnmounted(() => {
     photos.value.forEach(p => URL.revokeObjectURL(p.preview));
@@ -311,8 +404,13 @@ function moveMarkerFromInputs() {
     }
 }
 
+function removeExistingPhoto(photo) {
+    deletedPhotoIds.value.push(photo.id);
+    existingPhotos.value = existingPhotos.value.filter(p => p.id !== photo.id);
+}
+
 function addFiles(files) {
-    const remaining = 10 - photos.value.length;
+    const remaining = 10 - totalPhotoCount.value;
     Array.from(files).slice(0, remaining).forEach(file => {
         if (!file.type.startsWith('image/')) return;
         photos.value.push({
@@ -360,8 +458,15 @@ async function save() {
 
         photos.value.forEach(p => fd.append('photos[]', p.file));
 
-        const res = await createLake(fd);
-        emit('saved', res.lake);
+        let res;
+        if (isEdit.value) {
+            deletedPhotoIds.value.forEach(id => fd.append('deleted_photo_ids[]', id));
+            res = await updateLake(props.lake.id, fd);
+        } else {
+            res = await createLake(fd);
+            localStorage.removeItem(DRAFT_KEY);
+        }
+        emit('saved', res.lake, isEdit.value);
     } catch (e) {
         const errs = e.response?.data?.errors;
         if (errs) {
