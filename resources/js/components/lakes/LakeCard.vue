@@ -14,7 +14,7 @@
         </div>
 
         <div v-if="loading" class="flex flex-1 items-center justify-center p-8">
-            <p class="text-slate-500">Ładowanie...</p>
+            <p class="text-slate-500">{{ t('common.loading') }}</p>
         </div>
 
         <div v-else-if="lake" class="flex-1 overflow-y-auto p-4">
@@ -32,7 +32,7 @@
                 <p v-if="lake.region" class="text-sm text-emerald-700">{{ lake.region }}</p>
                 <p v-if="lake.address" class="text-sm text-slate-500">{{ lake.address }}</p>
                 <p v-if="lake.price" class="text-lg font-semibold text-slate-900">
-                    {{ lake.price }} PLN / dzień
+                    {{ lake.price }} {{ t('map.perDay') }}
                 </p>
                 <p v-if="lake.description" class="text-sm leading-relaxed text-slate-600">
                     {{ lake.description }}
@@ -46,7 +46,7 @@
                 class="mt-4 flex w-full items-center justify-center rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                 @click="handleMore"
             >
-                Більше
+                {{ t('map.more') }}
             </button>
         </div>
     </div>
@@ -56,7 +56,7 @@
         <div v-if="showLoginModal" class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4" @click.self="showLoginModal = false">
             <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
                 <div class="mb-6 flex items-center justify-between">
-                    <h2 class="text-xl font-bold text-slate-900">Увійдіть для продовження</h2>
+                    <h2 class="text-xl font-bold text-slate-900">{{ t('auth.loginToContinue') }}</h2>
                     <button
                         type="button"
                         class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
@@ -79,7 +79,7 @@
                         />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Пароль</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('auth.password') }}</label>
                         <input
                             v-model="loginForm.password"
                             type="password"
@@ -95,18 +95,18 @@
                         :disabled="authStore.loading"
                         class="w-full rounded-lg bg-emerald-600 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                     >
-                        {{ authStore.loading ? 'Вхід...' : 'Увійти' }}
+                        {{ authStore.loading ? t('auth.logging') : t('header.login') }}
                     </button>
                 </form>
 
                 <p class="mt-4 text-center text-sm text-slate-600">
-                    Немає акаунту?
+                    {{ t('auth.noAccount') }}
                     <router-link
                         :to="{ name: 'register' }"
                         class="font-medium text-emerald-700 hover:underline"
                         @click="showLoginModal = false"
                     >
-                        Зареєструватись
+                        {{ t('auth.register') }}
                     </router-link>
                 </p>
             </div>
@@ -117,8 +117,11 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
 import RecentCatches from './RecentCatches.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     lake: {

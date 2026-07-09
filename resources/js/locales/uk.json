@@ -1,0 +1,169 @@
+{
+  "nav": {
+    "myFishing": "Моя рибалка",
+    "myFishingShort": "Кабінет",
+    "lakeMap": "Карта озер",
+    "lakeMapShort": "Карта",
+    "posts": "Пости",
+    "postsShort": "Пости",
+    "community": "Спільнота",
+    "communityShort": "Стрічка",
+    "settings": "Налаштування"
+  },
+  "header": {
+    "addCatch": "+ Улов",
+    "addPost": "+ Пост",
+    "login": "Увійти",
+    "logout": "Вийти"
+  },
+  "modal": {
+    "cancel": "Скасувати",
+    "photo": "Фото",
+    "photoHint": "Натисни щоб додати фото",
+    "notes": "Нотатки",
+    "location": "Розташування",
+    "locationPlaceholder": "Назва місця або координати",
+    "mapOpen": "Карта",
+    "mapClose": "Закрити",
+    "mapHint": "Натисни на карті щоб вибрати місце",
+    "saving": "Збереження..."
+  },
+  "catch": {
+    "new": "Новий улов",
+    "add": "Додати улов",
+    "addBtn": "+ Додати улов",
+    "editTitle": "Редагувати улов",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "deleteConfirm": "Видалити цей улов?",
+    "myCatches": "Мої улови",
+    "backToCabinet": "← Назад до кабінету",
+    "noCatches": "Ще немає уловів. Додай перший!",
+    "recentOnLake": "Останні улови",
+    "noCatchesOnLake": "Немає зареєстрованих уловів на цьому озері",
+    "photoPreview": "Попередній перегляд",
+    "fishName": "Назва риби",
+    "fishNamePlaceholder": "Карась, щука, короп...",
+    "weight": "Вага (кг)",
+    "date": "Дата улову",
+    "lake": "Озеро",
+    "lakePlaceholder": "Вибери озеро",
+    "notesPlaceholder": "Розкажи про улов..."
+  },
+  "map": {
+    "showMap": "Карта",
+    "showList": "Список озер",
+    "allLakes": "Усі озера",
+    "lakesCount": "{count} водойм",
+    "searchPlaceholder": "Пошук озера або регіону...",
+    "noLakes": "Озер не знайдено",
+    "perDay": "PLN / день",
+    "more": "Більше"
+  },
+  "auth": {
+    "loginToContinue": "Увійдіть для продовження",
+    "password": "Пароль",
+    "logging": "Вхід...",
+    "noAccount": "Немає акаунту?",
+    "register": "Зареєструватись"
+  },
+  "post": {
+    "new": "Новий пост",
+    "publish": "Опублікувати",
+    "publishing": "Публікація...",
+    "description": "Опис",
+    "descriptionPlaceholder": "Поділись своєю історією...",
+    "details": "Деталі",
+    "likes": "{n} лайків",
+    "comments": "{n} коментарів",
+    "noComments": "Ще немає коментарів",
+    "commentPlaceholder": "Написати коментар...",
+    "locationLabel": "Локація: {name}",
+    "lakeLabel": "Озеро: {name}"
+  },
+  "posts": {
+    "title": "Пости",
+    "subtitle": "Улови рибалок спільноти",
+    "all": "Всі",
+    "postsFilter": "Пости",
+    "catchesFilter": "Улови",
+    "liked": "♥ Вподобані",
+    "commented": "💬 Коментовані",
+    "addCatch": "+ Улов",
+    "addPost": "+ Пост",
+    "loading": "Завантаження...",
+    "emptyLiked": "Ви ще не вподобали жодного посту",
+    "emptyCommented": "Ви ще не коментували жодного посту",
+    "empty": "Ще немає постів"
+  },
+  "common": {
+    "loading": "Завантаження...",
+    "viewAll": "Переглянути всі",
+    "save": "Зберегти",
+    "lake": "Озеро {name}"
+  },
+  "cabinet": {
+    "editProfile": "Редагувати профіль",
+    "recentCatches": "Останні улови",
+    "noCatches": "Ще немає уловів",
+    "achievements": "Мої досягнення",
+    "earned": "Отримано",
+    "earnedBadge": "✓ Отримано",
+    "notEarned": "Не отримано",
+    "earnedCount": "{earned} / {total} отримано",
+    "earnedOf": "з {total}",
+    "earnedSection": "Отримані ({count})",
+    "inProgressSection": "В процесі ({count})",
+    "activity": "Моя активність",
+    "permits": "Мої дозволи",
+    "noPermits": "Немає активних дозволів",
+    "active": "Активний",
+    "validUntil": "Діє до {date}",
+    "daysLeft": "Залишилось {days} днів",
+    "avatarHint": "Натисни на іконку щоб змінити фото",
+    "name": "Ім'я",
+    "saveError": "Помилка збереження"
+  },
+  "stats": {
+    "catches": "уловів",
+    "lakesVisited": "озер відвідано",
+    "biggestFish": "найбільша риба",
+    "followers": "підписників",
+    "likes": "лайків",
+    "ranking": "місце в рейтингу",
+    "kg": "кг"
+  },
+  "time": {
+    "justNow": "щойно",
+    "minutesAgo": "{mins} хв тому",
+    "hoursAgo": "{hours} год тому",
+    "daysAgo": "{days} дн. тому"
+  },
+  "achievements": {
+    "first_catch":      { "title": "Перший улов",       "description": "Додай свій перший улов" },
+    "catches_10":       { "title": "Досвідчений рибалка","description": "Зловити 10 риб" },
+    "catches_100":      { "title": "Легенда",            "description": "Зловити 100 риб" },
+    "big_fish":         { "title": "Велика здобич",      "description": "Зловити рибу вагою 10+ кг" },
+    "explorer_5":       { "title": "Дослідник",          "description": "Відвідати 5 різних озер" },
+    "explorer_25":      { "title": "Мандрівник",         "description": "Відвідати 25 різних озер" },
+    "photographer_10":  { "title": "Фотограф",           "description": "Додати фото до 10 уловів" },
+    "photographer_50":  { "title": "Фотомайстер",        "description": "Додати фото до 50 уловів" },
+    "night_fisher":     { "title": "Нічний рибалка",     "description": "Зловити 10 риб вночі (22:00–06:00)" },
+    "popular":          { "title": "Популярний",         "description": "Отримати 10 підписників" }
+  },
+  "activity": {
+    "catch": "Ви додали улов {fish_name} {weight} кг на озері {lake_name}",
+    "following": "Ви підписались на {name}",
+    "follower": "{name} підписався на вас"
+  },
+  "fisher": {
+    "publications": "Публікації",
+    "posts": "Пости",
+    "catches": "Улови",
+    "achievements": "Досягнення",
+    "follow": "+ Підписатись",
+    "unfollow": "Відписатись",
+    "empty": "Ще немає публікацій",
+    "loading": "Завантаження..."
+  }
+}

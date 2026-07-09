@@ -32,6 +32,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if (Auth::user()->is_blocked) {
+            Auth::logout();
+            return response()->json([
+                'message' => 'Ваш акаунт заблоковано.',
+            ], 403);
+        }
+
         $request->session()->regenerate();
 
         return response()->json([

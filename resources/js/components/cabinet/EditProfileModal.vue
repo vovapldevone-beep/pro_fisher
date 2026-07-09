@@ -8,7 +8,7 @@
             <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
                 <!-- Header -->
                 <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-                    <h2 class="font-semibold text-slate-900">Редагувати профіль</h2>
+                    <h2 class="font-semibold text-slate-900">{{ t('cabinet.editProfile') }}</h2>
                     <button
                         type="button"
                         class="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
@@ -26,7 +26,7 @@
                         <div class="relative">
                             <img
                                 :src="avatarPreview || profile.avatar_url || defaultAvatar"
-                                alt="Аватар"
+                                :alt="t('cabinet.editProfile')"
                                 class="h-24 w-24 rounded-full object-cover border-2 border-slate-200"
                             />
                             <label
@@ -45,12 +45,12 @@
                                 />
                             </label>
                         </div>
-                        <p class="text-xs text-slate-400">Натисни на іконку щоб змінити фото</p>
+                        <p class="text-xs text-slate-400">{{ t('cabinet.avatarHint') }}</p>
                     </div>
 
                     <!-- Name -->
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Ім'я</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('cabinet.name') }}</label>
                         <input
                             v-model="form.name"
                             type="text"
@@ -70,14 +70,14 @@
                             class="flex-1 rounded-lg border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                             @click="$emit('close')"
                         >
-                            Скасувати
+                            {{ t('modal.cancel') }}
                         </button>
                         <button
                             type="submit"
                             :disabled="saving"
                             class="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                         >
-                            {{ saving ? 'Збереження...' : 'Зберегти' }}
+                            {{ saving ? t('modal.saving') : t('common.save') }}
                         </button>
                     </div>
                 </form>
@@ -88,7 +88,10 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { updateProfile } from '../../api/cabinet';
+
+const { t } = useI18n();
 
 const props = defineProps({
     show: { type: Boolean, default: false },
@@ -133,7 +136,7 @@ async function handleSubmit() {
         emit('saved', result.user);
         emit('close');
     } catch (e) {
-        error.value = e.response?.data?.message ?? 'Помилка збереження';
+        error.value = e.response?.data?.message ?? t('cabinet.saveError');
     } finally {
         saving.value = false;
     }

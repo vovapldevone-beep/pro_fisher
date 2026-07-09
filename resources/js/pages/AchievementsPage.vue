@@ -13,9 +13,9 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Мої досягнення</h1>
+                    <h1 class="text-2xl font-bold text-slate-900">{{ t('cabinet.achievements') }}</h1>
                     <p v-if="!loading" class="mt-0.5 text-sm text-slate-500">
-                        {{ earnedCount }} / {{ totalCount }} отримано
+                        {{ t('cabinet.earnedCount', { earned: earnedCount, total: totalCount }) }}
                     </p>
                 </div>
                 <div
@@ -23,18 +23,18 @@
                     class="ml-auto flex h-14 w-14 flex-col items-center justify-center rounded-full bg-emerald-100"
                 >
                     <span class="text-lg font-bold text-emerald-700">{{ earnedCount }}</span>
-                    <span class="text-[10px] text-emerald-600">з {{ totalCount }}</span>
+                    <span class="text-[10px] text-emerald-600">{{ t('cabinet.earnedOf', { total: totalCount }) }}</span>
                 </div>
             </div>
 
             <!-- Loading -->
-            <div v-if="loading" class="py-24 text-center text-slate-400">Завантаження...</div>
+            <div v-if="loading" class="py-24 text-center text-slate-400">{{ t('common.loading') }}</div>
 
             <template v-else>
                 <!-- Earned -->
                 <section v-if="earned.length" class="mb-8">
                     <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-600">
-                        Отримані ({{ earned.length }})
+                        {{ t('cabinet.earnedSection', { count: earned.length }) }}
                     </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <AchievementCard
@@ -48,7 +48,7 @@
                 <!-- Not earned -->
                 <section v-if="notEarned.length">
                     <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-400">
-                        В процесі ({{ notEarned.length }})
+                        {{ t('cabinet.inProgressSection', { count: notEarned.length }) }}
                     </h2>
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         <AchievementCard
@@ -65,8 +65,11 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { fetchAchievements } from '../api/cabinet';
 import AchievementCard from '../components/cabinet/AchievementCard.vue';
+
+const { t } = useI18n();
 
 const loading = ref(true);
 const achievements = ref([]);

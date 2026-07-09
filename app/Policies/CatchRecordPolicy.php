@@ -9,11 +9,11 @@ class CatchRecordPolicy
 {
     public function update(User $user, CatchRecord $catchRecord): bool
     {
-        return $user->id === $catchRecord->user_id;
+        return (int) $user->id === (int) $catchRecord->user_id;
     }
 
     public function delete(User $user, CatchRecord $catchRecord): bool
     {
-        return $user->id === $catchRecord->user_id;
+        return (int) $user->id === (int) $catchRecord->user_id;
     }
 }

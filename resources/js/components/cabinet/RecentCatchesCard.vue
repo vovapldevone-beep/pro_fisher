@@ -1,14 +1,14 @@
 <template>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900">Останні улови</h3>
+            <h3 class="font-bold text-slate-900">{{ t('cabinet.recentCatches') }}</h3>
             <router-link to="/cabinet/catches" class="text-sm text-blue-600 hover:underline">
-                Переглянути всі
+                {{ t('common.viewAll') }}
             </router-link>
         </div>
 
         <div v-if="!catches?.length" class="text-sm text-slate-500">
-            Ще немає уловів
+            {{ t('cabinet.noCatches') }}
         </div>
         <div v-else class="grid grid-cols-2 gap-3">
             <CabinetCatchCard
@@ -18,19 +18,30 @@
             />
         </div>
 
-        <button
-            v-if="showAddButton"
-            type="button"
-            class="mt-4 w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-            @click="$emit('add-catch')"
-        >
-            + Додати улов
-        </button>
+        <div v-if="showAddButton" class="mt-4 flex gap-2">
+            <button
+                type="button"
+                class="flex-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                @click="$emit('add-catch')"
+            >
+                {{ t('header.addCatch') }}
+            </button>
+            <button
+                type="button"
+                class="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                @click="$emit('add-post')"
+            >
+                {{ t('header.addPost') }}
+            </button>
+        </div>
     </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
 import CabinetCatchCard from './CabinetCatchCard.vue';
+
+const { t } = useI18n();
 
 defineProps({
     catches: {
@@ -43,5 +54,5 @@ defineProps({
     },
 });
 
-defineEmits(['add-catch']);
+defineEmits(['add-catch', 'add-post']);
 </script>

@@ -35,18 +35,21 @@ class CatchController extends Controller
             $data['photo'] = $request->file('photo')->store('catches', 'public');
         }
 
+        $data['type'] = $data['type'] ?? 'catch';
         $catch = CatchRecord::create($data);
         $catch->load('lake:id,name,slug');
 
-        Activity::create([
-            'user_id' => $request->user()->id,
-            'type' => 'catch',
-            'data' => [
-                'fish_name' => $catch->fish_name,
-                'weight' => $catch->weight,
-                'lake_name' => $catch->lake?->name,
-            ],
-        ]);
+        if ($catch->type === 'catch') {
+            Activity::create([
+                'user_id' => $request->user()->id,
+                'type' => 'catch',
+                'data' => [
+                    'fish_name' => $catch->fish_name,
+                    'weight' => $catch->weight,
+                    'lake_name' => $catch->lake?->name,
+                ],
+            ]);
+        }
 
         return new CatchResource($catch);
     }

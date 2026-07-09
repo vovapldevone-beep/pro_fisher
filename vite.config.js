@@ -19,6 +19,11 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        host: '0.0.0.0',
+        // Set VITE_HMR_HOST to the machine's LAN IP to develop on a phone
+        hmr: {
+            host: process.env.VITE_HMR_HOST || 'localhost',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

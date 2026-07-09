@@ -1,5 +1,5 @@
 <template>
-    <div class="relative flex h-[calc(100vh-65px)]">
+    <div class="relative flex h-full overflow-hidden">
         <!-- Map (left, fills remaining space) -->
         <div class="relative min-w-0 flex-1">
             <button
@@ -7,7 +7,7 @@
                 class="absolute right-4 top-4 z-[1000] rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-md hover:bg-slate-50 md:hidden"
                 @click="showList = !showList"
             >
-                {{ showList ? 'Карта' : 'Список озер' }}
+                {{ showList ? t('map.showMap') : t('map.showList') }}
             </button>
 
             <LakeMap
@@ -15,6 +15,8 @@
                 :lakes="lakesStore.lakes"
                 :highlighted-slug="lakesStore.selectedLake?.slug"
                 @lake-selected="handleLakeSelected"
+                @bounds-changed="handleBoundsChanged"
+                @map-clicked="onMapClicked"
             />
         </div>
 
@@ -26,6 +28,15 @@
                 showCard ? 'hidden md:flex' : '',
             ]"
         >
+            <button
+                type="button"
+                class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 md:hidden"
+                @click="showList = false"
+            >
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+            </button>
             <LakeList
                 :lakes="lakesStore.lakes"
                 :loading="lakesStore.loading"
@@ -51,6 +62,9 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 import { useRoute, useRouter } from 'vue-router';
 import LakeMap from '../components/map/LakeMap.vue';
 import LakeCard from '../components/lakes/LakeCard.vue';
@@ -66,12 +80,20 @@ const lakeMapRef = ref(null);
 
 const initialSearch = computed(() => route.query.q?.toString() || '');
 
+async function handleBoundsChanged(bounds) {
+    await lakesStore.loadLakes(bounds);
+}
+
 async function handleLakeSelected(lake) {
     showCard.value = true;
     showList.value = false;
     await lakesStore.loadLake(lake.slug);
     router.replace({ query: { ...route.query, lake: lake.slug } });
     lakeMapRef.value?.flyToLake(lake);
+}
+
+function onMapClicked() {
+    if (showList.value) showList.value = false;
 }
 
 function closeCard() {
@@ -82,8 +104,6 @@ function closeCard() {
 }
 
 onMounted(async () => {
-    await lakesStore.loadLakes();
-
     const lakeSlug = route.query.lake;
     if (lakeSlug) {
         showCard.value = true;

@@ -1,5 +1,6 @@
 *.log
 .DS_Store
+/DEPLOY.md
 .env
 .env.backup
 .env.production
@@ -25,3 +26,6 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.htaccess
+.well-known/
+public/error_log
