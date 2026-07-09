@@ -25,7 +25,21 @@
       "Bash(node -e \"const m = require\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\); console.log\\(Object.keys\\(m\\)\\)\")",
       "Bash(node -e \"import\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\)\")",
       "Bash(node -e \"import\\('/home/qwas/projects/pro_fisher/node_modules/@unhead/vue/dist/index.mjs'\\).then\\(m => { const cu = m.createUnhead; console.log\\(typeof cu\\); const h = cu\\(\\); console.log\\(typeof h?.install\\); }\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(npm install *)",
+      "Bash(grep -v \"^\\\\\"/\\\\|^\\\\\"#\\\\|^\\\\\"http\\\\|^\\\\\"\\\\.\\\\|^\\\\\"w-\\\\|^\\\\\"h-\\\\|^\\\\\"bg-\\\\|^\\\\\"text-\\\\|^\\\\\"flex\\\\|^\\\\\"rounded\\\\|^\\\\\"border\\\\|^\\\\\"px\\\\|^\\\\\"py\\\\|^\\\\\"mt\\\\|^\\\\\"mb\\\\|^\\\\\"gap\\\\|^\\\\\"grid\\\\|^\\\\\"space\\\\|^\\\\\"max-\\\\|^\\\\\"min-\\\\|^\\\\\"overflow\\\\|^\\\\\"items-\\\\|^\\\\\"justify-\\\\|^\\\\\"font-\\\\|^\\\\\"leading\\\\|^\\\\\"tracking\\\\|^\\\\\"opacity\\\\|^\\\\\"shadow\\\\|^\\\\\"cursor\\\\|^\\\\\"block\\\\|^\\\\\"inline\\\\|^\\\\\"absolute\\\\|^\\\\\"relative\\\\|^\\\\\"fixed\\\\|^\\\\\"z-\\\\|^\\\\\"col-\\\\|^\\\\\"row-\\\\|^\\\\\"transition\\\\|^\\\\\"transform\\\\|^\\\\\"hover:\\\\|^\\\\\"focus:\\\\|^\\\\\"sm:\\\\|^\\\\\"md:\\\\|^\\\\\"lg:\\\\|^\\\\\"xl:\\\\|^\\\\\"src\\\\|^\\\\\"alt\\\\|^\\\\\"type\\\\|^\\\\\"class\\\\|^\\\\\"id\\\\|^\\\\\"name\\\\|^\\\\\"value\\\\|^\\\\\"for\\\\|^\\\\\"key\\\\|^\\\\\"ref\\\\|^\\\\\"\\\\$\")",
+      "Bash(grep \"\\\\.css$\")",
+      "Bash(grep -oE \"html[^{]*\\\\{[^}]{1,200}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
+      "Bash(grep -oE \"body[^{]*\\\\{[^}]{1,200}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
+      "Bash(grep -oE \"\\\\*,[^{]*\\\\{[^}]{1,500}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
+      "Bash(grep -oE \"[a-z,: ]{0,30}overflow[^;]{0,40}\")",
+      "Bash(grep -oE \"\\\\*[^{]*\\\\{[^}]{1,600}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
+      "Bash(xargs ls -la)",
+      "Bash(php -l /home/qwas/projects/pro_fisher/app/Http/Controllers/Api/FisherController.php)",
+      "Bash(php -l app/Http/Controllers/Api/AdminController.php)",
+      "Bash(composer validate *)",
+      "Bash(timeout 12 npx vite --clearScreen=false)",
+      "Bash(php -v)"
     ]
   }
 }

@@ -3,8 +3,8 @@
         <!-- Toolbar -->
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">Пости</h1>
-                <p class="mt-1 text-sm text-slate-500">Улови рибалок спільноти</p>
+                <h1 class="text-2xl font-bold text-slate-900">{{ t('posts.title') }}</h1>
+                <p class="mt-1 text-sm text-slate-500">{{ t('posts.subtitle') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
@@ -15,9 +15,9 @@
                         type="button"
                         class="rounded-full px-4 py-1.5 text-sm font-medium transition"
                         :class="activeFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
-                        @click="activeFilter = 'all'"
+                        @click="activeFilter = 'all'; typeFilter = 'all'"
                     >
-                        Всі
+                        {{ t('posts.all') }}
                     </button>
 
                     <!-- Type segmented control -->
@@ -26,18 +26,18 @@
                             type="button"
                             class="px-4 py-1.5 transition"
                             :class="typeFilter === 'post' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
-                            @click="typeFilter = typeFilter === 'post' ? 'all' : 'post'"
+                            @click="typeFilter = typeFilter === 'post' ? 'all' : 'post'; activeFilter = typeFilter === 'all' ? 'all' : 'none'"
                         >
-                            Пости
+                            {{ t('posts.postsFilter') }}
                         </button>
                         <span class="flex items-center text-slate-300">/</span>
                         <button
                             type="button"
                             class="px-4 py-1.5 transition"
                             :class="typeFilter === 'catch' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-200'"
-                            @click="typeFilter = typeFilter === 'catch' ? 'all' : 'catch'"
+                            @click="typeFilter = typeFilter === 'catch' ? 'all' : 'catch'; activeFilter = typeFilter === 'all' ? 'all' : 'none'"
                         >
-                            Улови
+                            {{ t('posts.catchesFilter') }}
                         </button>
                     </div>
 
@@ -61,24 +61,24 @@
                         class="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                         @click="showAddCatch = true"
                     >
-                        + Улов
+                        {{ t('posts.addCatch') }}
                     </button>
                     <button
                         type="button"
                         class="rounded-lg border border-blue-400 px-4 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                         @click="showAddPost = true"
                     >
-                        + Пост
+                        {{ t('posts.addPost') }}
                     </button>
                 </template>
             </div>
         </div>
 
-        <div v-if="loading" class="py-24 text-center text-slate-500">Завантаження...</div>
+        <div v-if="loading" class="py-24 text-center text-slate-500">{{ t('posts.loading') }}</div>
         <div v-else-if="!filteredCatches.length" class="py-24 text-center text-slate-500">
-            <span v-if="activeFilter === 'liked'">Ви ще не вподобали жодного посту</span>
-            <span v-else-if="activeFilter === 'commented'">Ви ще не коментували жодного посту</span>
-            <span v-else>Ще немає постів</span>
+            <span v-if="activeFilter === 'liked'">{{ t('posts.emptyLiked') }}</span>
+            <span v-else-if="activeFilter === 'commented'">{{ t('posts.emptyCommented') }}</span>
+            <span v-else>{{ t('posts.empty') }}</span>
         </div>
 
         <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -92,20 +92,13 @@
             />
         </div>
 
-        <!-- Comment sidebar overlay -->
-        <Transition name="slide">
-            <div
-                v-if="selectedPost"
-                class="fixed right-4 z-50 w-96"
-                style="top: 65px; height: calc(100vh - 65px - 1rem)"
-            >
-                <PostCommentSidebar
-                    :post="selectedPost"
-                    @close="selectedPost = null"
-                    @comment-added="handleCommentAdded"
-                />
-            </div>
-        </Transition>
+        <!-- Catch detail modal -->
+        <CatchDetailModal
+            :show="!!selectedPost"
+            :post="selectedPost"
+            @close="selectedPost = null"
+            @comment-added="handleCommentAdded"
+        />
 
         <!-- Modals -->
         <AddCatchModal
@@ -127,15 +120,17 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import api from '../api/client';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
 import AddPostModal from '../components/cabinet/AddPostModal.vue';
+import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
-import PostCommentSidebar from '../components/posts/PostCommentSidebar.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
 import { useLakesStore } from '../stores/lakes';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const catchesStore = useCatchesStore();
 const lakesStore = useLakesStore();
@@ -147,13 +142,13 @@ const activeFilter = ref('all');
 const showAddCatch = ref(false);
 const showAddPost = ref(false);
 
-const typeFilter = ref('all'); // 'all' | 'post' | 'catch'
+const typeFilter = ref('all');
 
-const filterTabs = [
-    { key: 'all', label: 'Всі' },
-    { key: 'liked', label: '♥ Вподобані' },
-    { key: 'commented', label: '💬 Коментовані' },
-];
+const filterTabs = computed(() => [
+    { key: 'all', label: t('posts.all') },
+    { key: 'liked', label: t('posts.liked') },
+    { key: 'commented', label: t('posts.commented') },
+]);
 
 const filteredCatches = computed(() => {
     let list = catches.value;
@@ -211,14 +206,3 @@ async function handleAddPost(formData) {
 }
 </script>
 
-<style scoped>
-.slide-enter-active,
-.slide-leave-active {
-    transition: transform 0.25s ease, opacity 0.25s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-    transform: translateX(1.5rem);
-    opacity: 0;
-}
-</style>

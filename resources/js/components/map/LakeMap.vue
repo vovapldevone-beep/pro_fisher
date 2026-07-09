@@ -17,7 +17,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['lake-selected', 'bounds-changed']);
+const emit = defineEmits(['lake-selected', 'bounds-changed', 'map-clicked']);
 
 const mapContainer = ref(null);
 let map = null;
@@ -53,6 +53,8 @@ function initMap() {
         clearTimeout(boundsTimer);
         boundsTimer = setTimeout(emitBounds, 500);
     });
+
+    map.on('click', () => emit('map-clicked'));
 
     emitBounds();
 }

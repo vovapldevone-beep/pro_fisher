@@ -1,0 +1,169 @@
+{
+  "nav": {
+    "myFishing": "Moje wędkarstwo",
+    "myFishingShort": "Gabinet",
+    "lakeMap": "Mapa jezior",
+    "lakeMapShort": "Mapa",
+    "posts": "Posty",
+    "postsShort": "Posty",
+    "community": "Społeczność",
+    "communityShort": "Aktualności",
+    "settings": "Ustawienia"
+  },
+  "header": {
+    "addCatch": "+ Połów",
+    "addPost": "+ Post",
+    "login": "Zaloguj",
+    "logout": "Wyloguj"
+  },
+  "modal": {
+    "cancel": "Anuluj",
+    "photo": "Zdjęcie",
+    "photoHint": "Kliknij aby dodać zdjęcie",
+    "notes": "Notatki",
+    "location": "Lokalizacja",
+    "locationPlaceholder": "Nazwa miejsca lub współrzędne",
+    "mapOpen": "Mapa",
+    "mapClose": "Zamknij",
+    "mapHint": "Kliknij na mapie aby wybrać miejsce",
+    "saving": "Zapisywanie..."
+  },
+  "catch": {
+    "new": "Nowy połów",
+    "add": "Dodaj połów",
+    "addBtn": "+ Dodaj połów",
+    "editTitle": "Edytuj połów",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "deleteConfirm": "Usunąć ten połów?",
+    "myCatches": "Moje połowy",
+    "backToCabinet": "← Powrót do profilu",
+    "noCatches": "Brak połowów. Dodaj pierwszy!",
+    "recentOnLake": "Ostatnie połowy",
+    "noCatchesOnLake": "Brak zarejestrowanych połowów na tym jeziorze",
+    "photoPreview": "Podgląd",
+    "fishName": "Nazwa ryby",
+    "fishNamePlaceholder": "Karaś, szczupak, karp...",
+    "weight": "Waga (kg)",
+    "date": "Data połowu",
+    "lake": "Jezioro",
+    "lakePlaceholder": "Wybierz jezioro",
+    "notesPlaceholder": "Opowiedz o połowie..."
+  },
+  "map": {
+    "showMap": "Mapa",
+    "showList": "Lista jezior",
+    "allLakes": "Wszystkie jeziora",
+    "lakesCount": "{count} zbiorników",
+    "searchPlaceholder": "Szukaj jeziora lub regionu...",
+    "noLakes": "Nie znaleziono jezior",
+    "perDay": "PLN / dzień",
+    "more": "Więcej"
+  },
+  "auth": {
+    "loginToContinue": "Zaloguj się aby kontynuować",
+    "password": "Hasło",
+    "logging": "Logowanie...",
+    "noAccount": "Nie masz konta?",
+    "register": "Zarejestruj się"
+  },
+  "post": {
+    "new": "Nowy post",
+    "publish": "Opublikuj",
+    "publishing": "Publikowanie...",
+    "description": "Opis",
+    "descriptionPlaceholder": "Podziel się swoją historią...",
+    "details": "Szczegóły",
+    "likes": "{n} polubień",
+    "comments": "{n} komentarzy",
+    "noComments": "Brak komentarzy",
+    "commentPlaceholder": "Napisz komentarz...",
+    "locationLabel": "Lokalizacja: {name}",
+    "lakeLabel": "Jezioro: {name}"
+  },
+  "posts": {
+    "title": "Posty",
+    "subtitle": "Połowy wędkarzy społeczności",
+    "all": "Wszystkie",
+    "postsFilter": "Posty",
+    "catchesFilter": "Połowy",
+    "liked": "♥ Polubione",
+    "commented": "💬 Komentowane",
+    "addCatch": "+ Połów",
+    "addPost": "+ Post",
+    "loading": "Ładowanie...",
+    "emptyLiked": "Nie polubiłeś jeszcze żadnego postu",
+    "emptyCommented": "Nie skomentowałeś jeszcze żadnego postu",
+    "empty": "Nie ma jeszcze postów"
+  },
+  "common": {
+    "loading": "Ładowanie...",
+    "viewAll": "Zobacz wszystkie",
+    "save": "Zapisz",
+    "lake": "Jezioro {name}"
+  },
+  "cabinet": {
+    "editProfile": "Edytuj profil",
+    "recentCatches": "Ostatnie połowy",
+    "noCatches": "Brak połowów",
+    "achievements": "Moje osiągnięcia",
+    "earned": "Zdobyte",
+    "earnedBadge": "✓ Zdobyte",
+    "notEarned": "Niezdobyte",
+    "earnedCount": "{earned} / {total} zdobyte",
+    "earnedOf": "z {total}",
+    "earnedSection": "Zdobyte ({count})",
+    "inProgressSection": "W trakcie ({count})",
+    "activity": "Moja aktywność",
+    "permits": "Moje zezwolenia",
+    "noPermits": "Brak aktywnych zezwoleń",
+    "active": "Aktywne",
+    "validUntil": "Ważne do {date}",
+    "daysLeft": "Pozostało {days} dni",
+    "avatarHint": "Kliknij ikonę aby zmienić zdjęcie",
+    "name": "Imię",
+    "saveError": "Błąd zapisywania"
+  },
+  "stats": {
+    "catches": "połowów",
+    "lakesVisited": "jezior odwiedzono",
+    "biggestFish": "największa ryba",
+    "followers": "obserwujących",
+    "likes": "polubień",
+    "ranking": "miejsce w rankingu",
+    "kg": "kg"
+  },
+  "time": {
+    "justNow": "przed chwilą",
+    "minutesAgo": "{mins} min temu",
+    "hoursAgo": "{hours} godz. temu",
+    "daysAgo": "{days} dni temu"
+  },
+  "achievements": {
+    "first_catch":      { "title": "Pierwszy połów",       "description": "Dodaj swój pierwszy połów" },
+    "catches_10":       { "title": "Doświadczony wędkarz", "description": "Złów 10 ryb" },
+    "catches_100":      { "title": "Legenda",              "description": "Złów 100 ryb" },
+    "big_fish":         { "title": "Wielki połów",         "description": "Złów rybę ważącą 10+ kg" },
+    "explorer_5":       { "title": "Odkrywca",             "description": "Odwiedź 5 różnych jezior" },
+    "explorer_25":      { "title": "Wędrowiec",            "description": "Odwiedź 25 różnych jezior" },
+    "photographer_10":  { "title": "Fotograf",             "description": "Dodaj zdjęcie do 10 połowów" },
+    "photographer_50":  { "title": "Mistrz fotografii",   "description": "Dodaj zdjęcie do 50 połowów" },
+    "night_fisher":     { "title": "Nocny wędkarz",        "description": "Złów 10 ryb w nocy (22:00–06:00)" },
+    "popular":          { "title": "Popularny",            "description": "Zdobądź 10 obserwujących" }
+  },
+  "activity": {
+    "catch": "Dodałeś połów {fish_name} {weight} kg na jeziorze {lake_name}",
+    "following": "Zacząłeś obserwować {name}",
+    "follower": "{name} zaczął Cię obserwować"
+  },
+  "fisher": {
+    "publications": "Publikacje",
+    "posts": "Posty",
+    "catches": "Połowy",
+    "achievements": "Osiągnięcia",
+    "follow": "+ Obserwuj",
+    "unfollow": "Przestań obserwować",
+    "empty": "Brak publikacji",
+    "loading": "Ładowanie..."
+  }
+}

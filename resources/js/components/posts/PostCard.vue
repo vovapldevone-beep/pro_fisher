@@ -31,18 +31,30 @@
             </div>
             <div class="mt-1 flex items-center justify-between text-xs text-white/70">
                 <span v-if="displayDate" class="text-white/60">{{ displayDate }}</span>
-                <!-- Like button -->
-                <button
-                    type="button"
-                    class="flex items-center gap-1 transition"
-                    :class="liked ? 'text-red-400' : 'text-white/70 hover:text-red-400'"
-                    @click.stop="handleLike"
-                >
-                    <svg class="h-4 w-4" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    <span>{{ likesCount }}</span>
-                </button>
+                <!-- Like + Comment buttons -->
+                <div class="flex items-center gap-3">
+                    <button
+                        type="button"
+                        class="flex items-center gap-1 transition"
+                        :class="liked ? 'text-red-400' : 'text-white/70 hover:text-red-400'"
+                        @click.stop="handleLike"
+                    >
+                        <svg class="h-4 w-4" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span>{{ likesCount }}</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="flex items-center gap-1 text-white/70 transition hover:text-white"
+                        @click.stop="$emit('select')"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span>{{ catchItem.comments_count ?? 0 }}</span>
+                    </button>
+                </div>
             </div>
         </div>
 

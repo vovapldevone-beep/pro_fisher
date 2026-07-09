@@ -15,15 +15,15 @@
             <!-- Text -->
             <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
-                    <p class="font-semibold text-slate-900">{{ achievement.title }}</p>
+                    <p class="font-semibold text-slate-900">{{ achievementTitle }}</p>
                     <span
                         v-if="achievement.earned"
                         class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
                     >
-                        ✓ Отримано
+                        {{ t('cabinet.earnedBadge') }}
                     </span>
                 </div>
-                <p class="mt-0.5 text-xs text-slate-500">{{ achievement.description }}</p>
+                <p class="mt-0.5 text-xs text-slate-500">{{ achievementDescription }}</p>
             </div>
         </div>
 
@@ -46,6 +46,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t, te } = useI18n();
 
 const props = defineProps({
     achievement: {
@@ -68,6 +71,16 @@ const icons = {
 function iconEmoji(icon) {
     return icons[icon] || '🏅';
 }
+
+const achievementTitle = computed(() => {
+    const key = `achievements.${props.achievement.id}.title`;
+    return te(key) ? t(key) : props.achievement.title;
+});
+
+const achievementDescription = computed(() => {
+    const key = `achievements.${props.achievement.id}.description`;
+    return te(key) ? t(key) : props.achievement.description;
+});
 
 const progressPercent = computed(() => {
     if (!props.achievement.max) return 0;

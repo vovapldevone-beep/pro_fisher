@@ -18,12 +18,16 @@
                 <span v-if="catchItem.weight" class="font-normal text-slate-600">{{ catchItem.weight }} кг</span>
             </p>
             <p class="mt-0.5 text-xs text-slate-400">{{ formatDate(catchItem.caught_at) }}</p>
-            <p class="mt-1 text-xs text-slate-500">Озеро {{ catchItem.lake?.name }}</p>
+            <p class="mt-1 text-xs text-slate-500">{{ t('common.lake', { name: catchItem.lake?.name }) }}</p>
         </div>
     </div>
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 defineProps({
     catchItem: {
         type: Object,

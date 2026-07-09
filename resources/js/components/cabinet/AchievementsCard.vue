@@ -1,8 +1,8 @@
 <template>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900">Мої досягнення</h3>
-            <router-link to="/cabinet/achievements" class="text-sm text-blue-600 hover:underline">Переглянути всі</router-link>
+            <h3 class="font-bold text-slate-900">{{ t('cabinet.achievements') }}</h3>
+            <router-link to="/cabinet/achievements" class="text-sm text-blue-600 hover:underline">{{ t('common.viewAll') }}</router-link>
         </div>
 
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -17,12 +17,12 @@
                 >
                     {{ iconEmoji(achievement.icon) }}
                 </div>
-                <p class="mt-2 text-xs font-medium text-slate-700">{{ achievement.title }}</p>
+                <p class="mt-2 text-xs font-medium text-slate-700">{{ achievementTitle(achievement) }}</p>
                 <p
                     class="mt-0.5 text-xs"
                     :class="achievement.earned ? 'text-emerald-600' : 'text-slate-400'"
                 >
-                    {{ achievement.earned ? 'Отримано' : 'Не отримано' }}
+                    {{ achievement.earned ? t('cabinet.earned') : t('cabinet.notEarned') }}
                 </p>
             </div>
         </div>
@@ -30,12 +30,21 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t, te } = useI18n();
+
 defineProps({
     achievements: {
         type: Array,
         default: () => [],
     },
 });
+
+function achievementTitle(achievement) {
+    const key = `achievements.${achievement.id}.title`;
+    return te(key) ? t(key) : achievement.title;
+}
 
 const icons = { star: '⭐', fish: '🐟', lake: '🏞️', camera: '📷', moon: '🌙' };
 

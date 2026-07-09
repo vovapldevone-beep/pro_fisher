@@ -1,11 +1,11 @@
 <template>
     <form class="space-y-4 rounded-2xl bg-white p-6 shadow-lg" @submit.prevent="handleSubmit">
         <h2 class="text-xl font-bold text-slate-900">
-            {{ editingCatch ? 'Edytuj połów' : 'Dodaj połów' }}
+            {{ editingCatch ? t('catch.editTitle') : t('catch.new') }}
         </h2>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Nazwa ryby</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('catch.fishName') }}</label>
             <input
                 v-model="form.fish_name"
                 type="text"
@@ -15,7 +15,7 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Waga (kg)</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('catch.weight') }}</label>
             <input
                 v-model="form.weight"
                 type="number"
@@ -26,7 +26,7 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Data połowu</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('catch.date') }}</label>
             <input
                 v-model="form.caught_at"
                 type="date"
@@ -36,13 +36,13 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Jezioro</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('catch.lake') }}</label>
             <select
                 v-model="form.lake_id"
                 required
                 class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
-                <option value="" disabled>Wybierz jezioro</option>
+                <option value="" disabled>{{ t('catch.lakePlaceholder') }}</option>
                 <option v-for="lake in lakes" :key="lake.id" :value="lake.id">
                     {{ lake.name }}
                 </option>
@@ -50,7 +50,7 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Zdjęcie</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('modal.photo') }}</label>
             <input
                 type="file"
                 accept="image/*"
@@ -60,13 +60,13 @@
             <img
                 v-if="photoPreview"
                 :src="photoPreview"
-                alt="Podgląd"
+                :alt="t('catch.photoPreview')"
                 class="mt-2 h-24 w-24 rounded-lg object-cover"
             />
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">Notatki</label>
+            <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('modal.notes') }}</label>
             <textarea
                 v-model="form.notes"
                 rows="3"
@@ -80,7 +80,7 @@
                 :disabled="saving"
                 class="flex-1 rounded-lg bg-emerald-600 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-                {{ saving ? 'Zapisywanie...' : (editingCatch ? 'Zapisz' : 'Dodaj połów') }}
+                {{ saving ? t('modal.saving') : (editingCatch ? t('common.save') : t('catch.add')) }}
             </button>
             <button
                 v-if="editingCatch"
@@ -88,7 +88,7 @@
                 class="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 @click="$emit('cancel')"
             >
-                Anuluj
+                {{ t('modal.cancel') }}
             </button>
         </div>
     </form>
@@ -96,6 +96,9 @@
 
 <script setup>
 import { reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     lakes: {
