@@ -152,10 +152,59 @@
                         <input v-model="form.region" type="text" placeholder="Мазовецьке воєводство"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
                     </div>
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Адреса</label>
-                        <input v-model="form.address" type="text" placeholder="вул. Рибацька 1"
-                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100" />
+                    <div ref="addressWrap" class="relative">
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                            Адреса
+                            <span class="ml-1 font-normal text-slate-400">— координати заповняться автоматично</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input v-model="form.address" type="text" placeholder="Warszawa, Jezioro Zegrzyńskie"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                                @focus="showAddressMenu = true"
+                                @keyup.enter="showAddressMenu = false; geocodeAddress()" />
+                            <button type="button"
+                                class="flex shrink-0 items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
+                                :disabled="geocoding || !form.address.trim()"
+                                @click="geocodeAddress">
+                                <svg v-if="!geocoding" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+                                </svg>
+                                <svg v-else viewBox="0 0 24 24" class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
+                                </svg>
+                                Знайти
+                            </button>
+                        </div>
+
+                        <!-- Dropdown: geolocation shortcut -->
+                        <div
+                            v-if="showAddressMenu"
+                            class="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+                        >
+                            <button type="button"
+                                class="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-slate-50 disabled:opacity-60"
+                                :disabled="locating"
+                                @click="useMyLocation">
+                                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                                    <svg v-if="!locating" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/>
+                                        <circle cx="12" cy="12" r="8"/>
+                                    </svg>
+                                    <svg v-else viewBox="0 0 24 24" class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                                <span>
+                                    <span class="block font-medium text-slate-800">Моє місцезнаходження</span>
+                                    <span class="block text-xs text-slate-400">
+                                        {{ locating ? 'Визначення…' : 'Використати GPS пристрою' }}
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
+
+                        <p v-if="geocodeError" class="mt-1 text-xs text-red-500">{{ geocodeError }}</p>
                     </div>
                 </div>
 
@@ -265,6 +314,11 @@ const fileInput = ref(null);
 const saving = ref(false);
 const error = ref('');
 const dragging = ref(false);
+const geocoding = ref(false);
+const geocodeError = ref('');
+const locating = ref(false);
+const showAddressMenu = ref(false);
+const addressWrap = ref(null);
 
 // Each entry: { id, file, preview }
 const photos = ref([]);
@@ -309,6 +363,7 @@ const markerIcon = L.icon({
 
 onMounted(async () => {
     await nextTick();
+    document.addEventListener('pointerdown', onClickOutside);
     map = L.map(mapEl.value, { center: [52.0, 19.0], zoom: 6 });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap',
@@ -382,6 +437,7 @@ async function loadLake() {
 }
 
 onUnmounted(() => {
+    document.removeEventListener('pointerdown', onClickOutside);
     photos.value.forEach(p => URL.revokeObjectURL(p.preview));
     map?.remove();
     map = null;
@@ -401,6 +457,90 @@ function moveMarkerFromInputs() {
     const lng = Number(form.longitude);
     if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && lat !== 0 && lng !== 0) {
         placeMarker(lat, lng);
+    }
+}
+
+// Device GPS → fills lat/lng, moves the marker and reverse-geocodes the address
+function useMyLocation() {
+    geocodeError.value = '';
+
+    if (!navigator.geolocation) {
+        geocodeError.value = 'Геолокація не підтримується цим браузером.';
+        return;
+    }
+    // Browsers only expose geolocation over HTTPS (localhost excepted)
+    if (!window.isSecureContext) {
+        geocodeError.value = 'Геолокація доступна лише через HTTPS.';
+        return;
+    }
+
+    locating.value = true;
+    navigator.geolocation.getCurrentPosition(
+        async ({ coords }) => {
+            form.latitude = parseFloat(coords.latitude.toFixed(7));
+            form.longitude = parseFloat(coords.longitude.toFixed(7));
+            placeMarker(form.latitude, form.longitude);
+            await reverseGeocode(form.latitude, form.longitude);
+            locating.value = false;
+            showAddressMenu.value = false;
+        },
+        (err) => {
+            locating.value = false;
+            const messages = {
+                1: 'Доступ до геолокації відхилено. Дозвольте його в налаштуваннях браузера.',
+                2: 'Не вдалося визначити місцезнаходження.',
+                3: 'Час очікування вичерпано. Спробуйте ще раз.',
+            };
+            geocodeError.value = messages[err.code] || 'Помилка визначення місцезнаходження.';
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+}
+
+// Coordinates → human-readable address (fills the address field)
+async function reverseGeocode(lat, lng) {
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'uk,pl,en' } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.display_name) form.address = data.display_name;
+    } catch {
+        // Address stays as-is — coordinates are already set, which is what matters
+    }
+}
+
+function onClickOutside(e) {
+    if (addressWrap.value && !addressWrap.value.contains(e.target)) {
+        showAddressMenu.value = false;
+    }
+}
+
+// Geocode the address via OpenStreetMap Nominatim → fills lat/lng and moves the marker
+async function geocodeAddress() {
+    const query = form.address.trim();
+    if (!query || geocoding.value) return;
+
+    geocoding.value = true;
+    geocodeError.value = '';
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'uk,pl,en' } });
+        if (!res.ok) throw new Error('request failed');
+        const results = await res.json();
+
+        if (!results.length) {
+            geocodeError.value = 'Не вдалося знайти координати за цією адресою.';
+            return;
+        }
+
+        form.latitude = parseFloat(Number(results[0].lat).toFixed(7));
+        form.longitude = parseFloat(Number(results[0].lon).toFixed(7));
+        placeMarker(form.latitude, form.longitude);
+    } catch {
+        geocodeError.value = 'Помилка при пошуку координат. Спробуйте ще раз.';
+    } finally {
+        geocoding.value = false;
     }
 }
 

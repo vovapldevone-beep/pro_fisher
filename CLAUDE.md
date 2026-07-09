@@ -59,7 +59,13 @@ Protected API routes use the `auth:sanctum` middleware.
 - `HomeController::posts()` sorts by `created_at` DESC (not `caught_at`), eager-loads `lake:id,name,slug,latitude,longitude` for LocationBadge.
 - `User` model has `avatarUrl(): Attribute` accessor — converts storage path to full URL (non-http paths get `asset('storage/...')`).
 - `FisherController::show()` returns profile (no `location`/`joined_at`), stats (incl. `total_likes`), achievements, `is_following`. `FisherController::posts()` — `GET /api/fishers/{user}/posts?page=&type=post|catch` — paginated (12/page) catches+posts with `meta: {current_page, last_page, total}`; used by FisherPage infinite scroll.
-- **Admin panel**: `AdminController` behind `admin` middleware, prefix `/api/admin`. Endpoints: `stats` (users/catches/comments/likes/lakes counts), `users` + block/unblock, `catches` + delete, `lakes` (paginated, primary photo eager-loaded) + `storeLake` (validates lake fields + up to 10 photos ≤5MB, generates unique slug via `Str::slug`, stores photos on `public` disk under `lakes/`, first photo `is_primary`).
+- **Admin panel**: `AdminController` behind `admin` middleware, prefix `/api/admin`. Endpoints: `stats` (users/catches/comments/likes/lakes counts), `users` + block/unblock, `catches` + delete, and full lake CRUD:
+  - `lakes` — paginated list, primary photo eager-loaded.
+  - `storeLake` — validates lake fields + up to 10 photos ≤5MB, unique slug via `Str::slug`, photos on `public` disk under `lakes/`, first photo `is_primary`.
+  - `showLake` — full lake data + all photos, for the edit form.
+  - `updateLake` — **POST, not PUT** (PHP does not parse multipart bodies on PUT). Regenerates the slug only when the name changes, deletes photos listed in `deleted_photo_ids[]` (files too), appends new ones, guarantees a primary photo survives.
+  - `deleteLake` — nulls `catches.lake_id` first so user content survives the FK cascade, then deletes photo files and the lake.
+  - Routes bind `{lake:id}` explicitly because `Lake::getRouteKeyName()` returns `'slug'`.
 - `LakePhoto` model — `lake_photos` table: `lake_id`, `path`, `is_primary`, `sort_order`.
 
 ### Internationalisation
@@ -93,7 +99,14 @@ Route guards in `router/index.js` redirect unauthenticated users to `/login` (wi
 
 **FisherPage** (`/fishers/:id`): profile card (avatar, name, @handle, bio, follow/unfollow, 6 stat items) + tab bar (Публікації / Пости / Улови / Досягнення) + 4-column card grid (2 on mobile) with like/comment counts. Infinite scroll via `IntersectionObserver` on a sentinel div → `fetchFisherPosts(id, {page, type})`. Card click opens `CatchDetailModal`. Own id redirects to `/cabinet`.
 
-**Admin panel** (`/admin`, `pages/admin/`): `AdminPage.vue` with tabs (dashboard stats / users / content / lakes), `AddLakeModal.vue` — lake creation form with Leaflet map coordinate picker (click sets lat/lng marker) and multi-photo upload (drag-and-drop, previews via `URL.createObjectURL`, FormData multipart submit). Admin link shown in nav only for `user.is_admin`.
+**Admin panel** (`/admin`, `pages/admin/`): `AdminPage.vue` with tabs (dashboard stats / users / content / lakes), `AddLakeModal.vue` — lake create/edit form with Leaflet map coordinate picker (click sets lat/lng marker) and multi-photo upload (drag-and-drop, previews via `URL.createObjectURL`, FormData multipart submit). Admin link shown in nav only for `user.is_admin`.
+
+**Lake address → coordinates** (`AddLakeModal.vue`): three ways to set `latitude`/`longitude`, all sharing `placeMarker(lat, lng)`:
+- Click the Leaflet map.
+- Type an address + press Enter or the "Знайти" button → `geocodeAddress()` calls **Nominatim** (`nominatim.openstreetmap.org/search`, free OSM geocoder, ~1 req/sec limit). Returns WGS84 decimal degrees — the same system Google Maps uses, so the `?q=lat,lng` links in `LocationBadge`/`PostCard` work unchanged.
+- Focus the address input → a dropdown appears with **"Моє місцезнаходження"** (mobile-first). `useMyLocation()` calls `navigator.geolocation.getCurrentPosition` (`enableHighAccuracy: true`), fills the coordinate inputs, moves the marker, then `reverseGeocode()` hits Nominatim's `/reverse` endpoint to fill the address text. Guards for missing API and non-HTTPS (`window.isSecureContext`) — **geolocation is blocked over plain HTTP except on localhost**. Permission-denied / timeout errors map to Ukrainian messages. The dropdown closes on `pointerdown` outside (listener registered in `onMounted`, removed in `onUnmounted`).
+
+**Lake draft persistence**: in create mode `AddLakeModal` watches `form` deeply and mirrors it to `localStorage('admin_lake_draft')`, restoring on open and clearing after a successful create. Photos are not persisted (`File` objects can't be serialised).
 
 **PostsPage filters**: "Всі" resets both `activeFilter` and `typeFilter`; activating Пости/Улови sets `activeFilter = 'none'` (removes green from "Всі"); deactivating restores `'all'`.
 

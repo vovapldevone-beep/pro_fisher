@@ -36,7 +36,10 @@
       "Bash(grep -oE \"\\\\*[^{]*\\\\{[^}]{1,600}\\\\}\" /home/qwas/projects/pro_fisher/public/build/assets/app-DiGvnmSx.css)",
       "Bash(xargs ls -la)",
       "Bash(php -l /home/qwas/projects/pro_fisher/app/Http/Controllers/Api/FisherController.php)",
-      "Bash(php -l app/Http/Controllers/Api/AdminController.php)"
+      "Bash(php -l app/Http/Controllers/Api/AdminController.php)",
+      "Bash(composer validate *)",
+      "Bash(timeout 12 npx vite --clearScreen=false)",
+      "Bash(php -v)"
     ]
   }
 }
