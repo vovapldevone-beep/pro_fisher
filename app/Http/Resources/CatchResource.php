@@ -11,6 +11,10 @@ class CatchResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            // Always present: the UI needs it to decide who may edit or delete.
+            // The `user` relation is only loaded on some endpoints.
+            'user_id' => $this->user_id,
+            'lake_id' => $this->lake_id,
             'fish_name' => $this->fish_name,
             'weight' => $this->weight,
             'photo' => $this->photo,

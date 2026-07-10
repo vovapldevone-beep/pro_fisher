@@ -174,11 +174,12 @@
 </template>
 
 <script setup>
-import { computed, h, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, h, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
 import { fetchFisher, fetchFisherPosts, followFisher, unfollowFisher } from '../api/fishers';
+import { useInfiniteScroll } from '../composables/useInfiniteScroll';
 import { useAuthStore } from '../stores/auth';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
@@ -194,14 +195,15 @@ const isFollowing = ref(false);
 
 const posts = ref([]);
 const postsLoading = ref(false);
+// `page` holds the *next* page to fetch, so the comparison must be inclusive —
+// with `<` the final page would never load.
 const page = ref(1);
 const lastPage = ref(1);
-const hasMore = computed(() => page.value < lastPage.value);
+const hasMore = computed(() => page.value <= lastPage.value);
 
 const activeTab = ref('publications');
 const selectedPost = ref(null);
 const sentinel = ref(null);
-let observer = null;
 
 const defaultAvatar = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200';
 
@@ -320,18 +322,12 @@ async function switchTab(tab) {
 
 // ─── Infinite scroll ──────────────────────────────────────────────────────────
 
-function setupObserver() {
-    if (!sentinel.value) return;
-    observer = new IntersectionObserver(
-        (entries) => {
-            if (entries[0].isIntersecting && !postsLoading.value && hasMore.value) {
-                loadPosts();
-            }
-        },
-        { threshold: 0.1 },
-    );
-    observer.observe(sentinel.value);
-}
+useInfiniteScroll(sentinel, {
+    loading: postsLoading,
+    hasMore,
+    // Only ever appends — the first page is fetched by load() / switchTab
+    onLoad: () => posts.value.length && loadPosts(),
+});
 
 // ─── Like ─────────────────────────────────────────────────────────────────────
 
@@ -413,15 +409,9 @@ async function load(id) {
         loading.value = false;
     }
     await loadPosts(true);
-    await nextTick();
-    setupObserver();
 }
 
 onMounted(() => load(route.params.id));
-
-onUnmounted(() => {
-    if (observer) observer.disconnect();
-});
 
 watch(() => route.params.id, (id) => {
     if (id) {

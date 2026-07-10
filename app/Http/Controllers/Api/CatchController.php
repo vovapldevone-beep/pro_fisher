@@ -42,6 +42,7 @@ class CatchController extends Controller
         if ($catch->type === 'catch') {
             Activity::create([
                 'user_id' => $request->user()->id,
+                'catch_id' => $catch->id,
                 'type' => 'catch',
                 'data' => [
                     'fish_name' => $catch->fish_name,
