@@ -81,6 +81,9 @@
   },
   "post": {
     "new": "Новий пост",
+    "editTitle": "Редагувати пост",
+    "deleteConfirm": "Видалити цей пост?",
+    "actions": "Дії з публікацією",
     "publish": "Опублікувати",
     "publishing": "Публікація...",
     "description": "Опис",

@@ -113,6 +113,9 @@
         <div v-if="activeTab === 'content'">
             <div v-if="loadingCatches" class="py-20 text-center text-slate-400">Завантаження...</div>
             <div v-else>
+                <p class="mb-4 text-sm text-slate-500">
+                    Всього публікацій: <span class="font-semibold text-slate-800">{{ catchesTotal }}</span>
+                </p>
                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <table class="w-full text-sm">
                         <thead class="border-b border-slate-100 bg-slate-50">
@@ -264,7 +267,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, h, onMounted, ref, watch } from 'vue';
 import {
     adminDeleteCatch,
     blockUser,
@@ -352,6 +355,7 @@ const catches = ref([]);
 const loadingCatches = ref(false);
 const catchesPage = ref(1);
 const catchesLastPage = ref(1);
+const catchesTotal = ref(0);
 const deletingId = ref(null);
 
 async function loadCatches(page = 1) {
@@ -361,6 +365,7 @@ async function loadCatches(page = 1) {
         const res = await fetchAdminCatches(page);
         catches.value = res.data;
         catchesLastPage.value = res.last_page;
+        catchesTotal.value = res.total;
     } finally {
         loadingCatches.value = false;
     }
@@ -372,6 +377,7 @@ async function handleDelete(item) {
     try {
         await adminDeleteCatch(item.id);
         catches.value = catches.value.filter(c => c.id !== item.id);
+        catchesTotal.value--;
         await loadStats();
     } finally {
         deletingId.value = null;
@@ -428,22 +434,34 @@ async function handleDeleteLake(lake) {
 }
 
 // ── Pagination ────────────────────────────────────────────────────────────────
+// A render function, not a `template` string: Vite ships the runtime-only Vue
+// build, which cannot compile templates at runtime.
+const BTN_CLASS = 'rounded-lg border border-slate-200 px-3 py-1.5 text-sm disabled:opacity-40';
+
 const Pagination = {
     props: { current: Number, last: Number },
     emits: ['change'],
-    template: `
-        <div v-if="last > 1" class="mt-4 flex items-center justify-center gap-2">
-            <button type="button"
-                class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm disabled:opacity-40"
-                :disabled="current === 1"
-                @click="$emit('change', current - 1)">← Назад</button>
-            <span class="text-sm text-slate-500">{{ current }} / {{ last }}</span>
-            <button type="button"
-                class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm disabled:opacity-40"
-                :disabled="current === last"
-                @click="$emit('change', current + 1)">Вперед →</button>
-        </div>
-    `,
+    setup(props, { emit }) {
+        return () => {
+            if (props.last <= 1) return null;
+
+            return h('div', { class: 'mt-4 flex items-center justify-center gap-2' }, [
+                h('button', {
+                    type: 'button',
+                    class: BTN_CLASS,
+                    disabled: props.current === 1,
+                    onClick: () => emit('change', props.current - 1),
+                }, '← Назад'),
+                h('span', { class: 'text-sm text-slate-500' }, `${props.current} / ${props.last}`),
+                h('button', {
+                    type: 'button',
+                    class: BTN_CLASS,
+                    disabled: props.current === props.last,
+                    onClick: () => emit('change', props.current + 1),
+                }, 'Вперед →'),
+            ]);
+        };
+    },
 };
 
 // ── Load on tab change ────────────────────────────────────────────────────────

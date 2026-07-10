@@ -40,7 +40,15 @@
       "Bash(composer validate *)",
       "Bash(timeout 12 npx vite --clearScreen=false)",
       "Bash(php -v)",
-      "Bash(grep -n \"^VITE_APP_NAME\\\\|^APP_LOCALE\\\\|^$\" .env.example)"
+      "Bash(grep -n \"^VITE_APP_NAME\\\\|^APP_LOCALE\\\\|^$\" .env.example)",
+      "Bash(php -l database/seeders/UserContentSeeder.php)",
+      "Bash(php artisan tinker '--execute= *)",
+      "Bash(php -l database/seeders/DemoUserSeeder.php)",
+      "Bash(php -l database/seeders/PostLikeSeeder.php)",
+      "Bash(python3 -c ' *)",
+      "Bash(php -l app/Http/Requests/Catch/UpdateCatchRequest.php)",
+      "Bash(awk '{print \"user\"$2\": \"$1\" фото\"}')",
+      "Bash(php -l database/seeders/PhotoContentSeeder.php)"
     ]
   }
 }

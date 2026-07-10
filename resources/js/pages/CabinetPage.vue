@@ -248,15 +248,26 @@
         :post="selectedPost"
         @close="selectedPost = null"
         @comment-added="handleCommentAdded"
+        @edit="startEdit"
+        @deleted="handleDeleted"
+    />
+
+    <EditCatchModal
+        :show="!!editingPost"
+        :post="editingPost"
+        :lakes="lakesStore.lakes"
+        @close="editingPost = null"
+        @updated="handleUpdated"
     />
 </template>
 
 <script setup>
-import { computed, h, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, h, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { fetchCabinet } from '../api/cabinet';
 import { fetchFisherPosts } from '../api/fishers';
+import { useInfiniteScroll } from '../composables/useInfiniteScroll';
 import ActivityFeed from '../components/cabinet/ActivityFeed.vue';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
 import AddPostModal from '../components/cabinet/AddPostModal.vue';
@@ -264,6 +275,7 @@ import EditProfileModal from '../components/cabinet/EditProfileModal.vue';
 import FriendsModal from '../components/cabinet/FriendsModal.vue';
 // import PermitsCard from '../components/cabinet/PermitsCard.vue';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
+import EditCatchModal from '../components/posts/EditCatchModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
@@ -285,14 +297,16 @@ const showFriends = ref(false);
 
 const posts = ref([]);
 const postsLoading = ref(false);
+// `page` holds the *next* page to fetch, so the comparison must be inclusive —
+// with `<` the final page would never load.
 const page = ref(1);
 const lastPage = ref(1);
-const hasMore = computed(() => page.value < lastPage.value);
+const hasMore = computed(() => page.value <= lastPage.value);
 
 const activeTab = ref('publications');
 const selectedPost = ref(null);
+const editingPost = ref(null);
 const sentinel = ref(null);
-let observer = null;
 
 const defaultAvatar = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200';
 
@@ -433,18 +447,12 @@ async function switchTab(tab) {
 
 // ─── Infinite scroll ──────────────────────────────────────────────────────────
 
-function setupObserver() {
-    if (!sentinel.value) return;
-    observer = new IntersectionObserver(
-        (entries) => {
-            if (entries[0].isIntersecting && !postsLoading.value && hasMore.value) {
-                loadPosts();
-            }
-        },
-        { threshold: 0.1 },
-    );
-    observer.observe(sentinel.value);
-}
+useInfiniteScroll(sentinel, {
+    loading: postsLoading,
+    hasMore,
+    // Only ever appends — the first page is fetched by onMounted / switchTab
+    onLoad: () => posts.value.length && loadPosts(),
+});
 
 // ─── Like / detail ────────────────────────────────────────────────────────────
 
@@ -469,6 +477,24 @@ function handleCommentAdded(postId) {
         p.is_commented = true;
         p.comments_count = (p.comments_count ?? 0) + 1;
     }
+}
+
+// ─── Owner actions ────────────────────────────────────────────────────────────
+
+function startEdit(post) {
+    selectedPost.value = null;
+    editingPost.value = post;
+}
+
+function handleUpdated(updated) {
+    const index = posts.value.findIndex((p) => p.id === updated.id);
+    if (index !== -1) posts.value[index] = updated;
+    loadCabinet(); // stats and the activity feed may have changed
+}
+
+function handleDeleted(id) {
+    posts.value = posts.value.filter((p) => p.id !== id);
+    loadCabinet();
 }
 
 // ─── Modals ───────────────────────────────────────────────────────────────────
@@ -527,13 +553,10 @@ onMounted(async () => {
     desktopQuery.addEventListener('change', onBreakpointChange);
     await Promise.all([loadCabinet(), lakesStore.loadLakes()]);
     await loadPosts(true);
-    await nextTick();
-    setupObserver();
 });
 
 onUnmounted(() => {
     desktopQuery.removeEventListener('change', onBreakpointChange);
-    if (observer) observer.disconnect();
 });
 </script>
 

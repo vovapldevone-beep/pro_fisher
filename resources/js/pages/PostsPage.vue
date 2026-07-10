@@ -98,6 +98,16 @@
             :post="selectedPost"
             @close="selectedPost = null"
             @comment-added="handleCommentAdded"
+            @edit="startEdit"
+            @deleted="handleDeleted"
+        />
+
+        <EditCatchModal
+            :show="!!editingPost"
+            :post="editingPost"
+            :lakes="lakesStore.lakes"
+            @close="editingPost = null"
+            @updated="handleUpdated"
         />
 
         <!-- Modals -->
@@ -125,6 +135,7 @@ import api from '../api/client';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
 import AddPostModal from '../components/cabinet/AddPostModal.vue';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
+import EditCatchModal from '../components/posts/EditCatchModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
@@ -138,6 +149,7 @@ const lakesStore = useLakesStore();
 const catches = ref([]);
 const loading = ref(true);
 const selectedPost = ref(null);
+const editingPost = ref(null);
 const activeFilter = ref('all');
 const showAddCatch = ref(false);
 const showAddPost = ref(false);
@@ -191,6 +203,22 @@ function handleLikeChanged({ id, liked, likes_count }) {
 function handleCommentAdded(postId) {
     const post = catches.value.find((c) => c.id === postId);
     if (post) post.is_commented = true;
+}
+
+// ─── Owner actions ────────────────────────────────────────────────────────────
+
+function startEdit(post) {
+    selectedPost.value = null;
+    editingPost.value = post;
+}
+
+function handleUpdated(updated) {
+    const index = catches.value.findIndex((c) => c.id === updated.id);
+    if (index !== -1) catches.value[index] = { ...catches.value[index], ...updated };
+}
+
+function handleDeleted(id) {
+    catches.value = catches.value.filter((c) => c.id !== id);
 }
 
 async function handleAddCatch(formData) {

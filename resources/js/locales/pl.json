@@ -81,6 +81,9 @@
   },
   "post": {
     "new": "Nowy post",
+    "editTitle": "Edytuj post",
+    "deleteConfirm": "Usunąć ten post?",
+    "actions": "Akcje publikacji",
     "publish": "Opublikuj",
     "publishing": "Publikowanie...",
     "description": "Opis",
