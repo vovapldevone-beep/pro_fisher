@@ -2,6 +2,15 @@
     <div class="flex min-h-[calc(100vh-57px)] items-center justify-center px-4 py-12">
         <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
             <h1 class="mb-6 text-2xl font-bold text-slate-900">Rejestracja</h1>
+
+            <GoogleSignInButton label="Zarejestruj się przez Google" />
+
+            <div class="my-5 flex items-center gap-3 text-xs text-slate-400">
+                <span class="h-px flex-1 bg-slate-200"></span>
+                lub
+                <span class="h-px flex-1 bg-slate-200"></span>
+            </div>
+
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
                     <label class="mb-1 block text-sm font-medium text-slate-700">Imię</label>
@@ -65,6 +74,7 @@
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import GoogleSignInButton from '../components/shared/GoogleSignInButton.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();

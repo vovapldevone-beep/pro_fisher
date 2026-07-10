@@ -52,7 +52,9 @@
       "Bash(php -l database/migrations/2026_07_10_130000_repoint_foreign_keys_from_lakes_old.php)",
       "Bash(exit 1)",
       "Bash(composer --version)",
-      "Bash(xargs -I{} basename {})"
+      "Bash(xargs -I{} basename {})",
+      "Bash(composer require *)",
+      "Bash(php -l app/Http/Controllers/Api/GoogleAuthController.php)"
     ]
   }
 }
