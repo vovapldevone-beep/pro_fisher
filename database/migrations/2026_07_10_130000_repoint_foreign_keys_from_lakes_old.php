@@ -40,7 +40,7 @@ return new class extends Migration
 
             $this->reconcileOrphans($table);
 
-            $name = $fk->CONSTRAINT_NAME ?? "{$table}_".self::COLUMN.'_foreign';
+            $name = $fk->CONSTRAINT_NAME ?? $this->freeConstraintName($table);
             DB::statement(
                 "ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` ".
                 'FOREIGN KEY (`'.self::COLUMN.'`) REFERENCES `lakes` (`id`) ON DELETE CASCADE'
@@ -87,6 +87,36 @@ return new class extends Migration
             $orphans->delete();
             echo "  {$table}: {$count} рядків видалено (колонка NOT NULL)\n";
         }
+    }
+
+    /**
+     * InnoDB constraint names are unique per *database*, not per table. Renaming a
+     * table carries its constraint name along, so `lake_photos_old` may still hold
+     * `lake_photos_lake_id_foreign` and block us (errno 121). Take the next free name.
+     */
+    private function freeConstraintName(string $table): string
+    {
+        $base = "{$table}_".self::COLUMN.'_foreign';
+
+        for ($i = 0; $i < 50; $i++) {
+            $name = $i === 0 ? $base : "{$base}_{$i}";
+            if (! $this->constraintNameTaken($name)) {
+                return $name;
+            }
+        }
+
+        throw new RuntimeException("Не вдалося підібрати вільне ім'я для {$base}.");
+    }
+
+    private function constraintNameTaken(string $name): bool
+    {
+        return (bool) DB::select('
+            SELECT 1
+            FROM information_schema.TABLE_CONSTRAINTS
+            WHERE CONSTRAINT_SCHEMA = DATABASE()
+              AND CONSTRAINT_NAME = ?
+            LIMIT 1
+        ', [$name]);
     }
 
     /** MariaDB rejects placeholders in `SHOW COLUMNS ... LIKE ?`, hence information_schema. */
