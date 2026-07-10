@@ -50,11 +50,13 @@
 </template>
 
 <script setup>
+import { toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useScrollLock } from '../../composables/useScrollLock';
 
 const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
     show: { type: Boolean, default: false },
     title: { type: String, required: true },
     saving: { type: Boolean, default: false },
@@ -63,4 +65,6 @@ defineProps({
 });
 
 defineEmits(['close', 'submit']);
+
+useScrollLock(toRef(props, 'show'));
 </script>

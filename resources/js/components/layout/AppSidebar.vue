@@ -76,7 +76,8 @@ const navItems = computed(() => {
         { to: '/cabinet', label: t('nav.myFishing'), icon: FishIcon,   exact: false },
         { to: '/map',     label: t('nav.lakeMap'),   icon: MapPinIcon, exact: true },
         { to: '/posts',   label: t('nav.posts'),     icon: SearchIcon, exact: true },
-        { to: '/',        label: t('nav.community'), icon: UsersIcon,  exact: true },
+        // Спільнота прихована: після логіну "/" редіректить на Пости
+        // { to: '/',        label: t('nav.community'), icon: UsersIcon,  exact: true },
     ];
     if (authStore.user?.is_admin) {
         items.push({ to: '/admin', label: 'Адмін', icon: ShieldIcon, exact: false });

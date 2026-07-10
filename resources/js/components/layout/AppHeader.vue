@@ -1,11 +1,14 @@
 <template>
-    <header class="fixed inset-x-0 top-0 z-50 bg-[#1a1f2e]/95 backdrop-blur-sm">
+    <header
+        class="fixed inset-x-0 top-0 z-50 bg-[#1a1f2e]/95 backdrop-blur-sm transition-transform duration-300 ease-out"
+        :class="hidden ? '-translate-y-full md:translate-y-0' : ''"
+    >
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-            <router-link to="/" class="flex items-center gap-2">
-                <svg class="h-8 w-8 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+            <router-link to="/" class="flex min-w-0 items-center gap-2">
+                <svg class="h-8 w-8 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C8 6 4 8 4 12c0 3 2 5 4 6 1-2 3-3 5-3s4 1 5 3c2-1 4-3 4-6 0-4-4-6-8-10zm0 14c-1.5 0-3 .5-4 1.5.5-2 2-3.5 4-3.5s3.5 1.5 4 3.5c-1-1-2.5-1.5-4-1.5z"/>
                 </svg>
-                <span class="text-xl font-bold text-white">FishHub</span>
+                <span class="truncate text-lg font-bold text-white sm:text-xl">FishHub</span>
             </router-link>
 
             <nav class="hidden items-center gap-8 md:flex">
@@ -20,7 +23,7 @@
                 </router-link>
             </nav>
 
-            <div class="flex items-center gap-3">
+            <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                 <button type="button" class="hidden p-2 text-white/70 hover:text-white sm:block" aria-label="Пошук">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -43,10 +46,10 @@
                 </button>
 
                 <!-- Language switcher -->
-                <div class="hidden items-center overflow-hidden rounded-lg border border-white/20 text-xs font-semibold sm:flex">
+                <div class="flex shrink-0 items-center overflow-hidden rounded-lg border border-white/20 text-xs font-semibold">
                     <button
                         type="button"
-                        class="px-2.5 py-1.5 transition"
+                        class="px-2 py-1.5 transition sm:px-2.5"
                         :class="locale === 'uk' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
                         @click="setLocale('uk')"
                     >
@@ -55,7 +58,7 @@
                     <span class="text-white/20">|</span>
                     <button
                         type="button"
-                        class="px-2.5 py-1.5 transition"
+                        class="px-2 py-1.5 transition sm:px-2.5"
                         :class="locale === 'pl' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
                         @click="setLocale('pl')"
                     >
@@ -72,7 +75,7 @@
                     </router-link>
                     <button
                         type="button"
-                        class="rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                        class="shrink-0 whitespace-nowrap rounded-lg border border-white/30 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:px-4"
                         @click="handleLogout"
                     >
                         {{ t('header.logout') }}
@@ -81,7 +84,7 @@
                 <template v-else>
                     <router-link
                         to="/login"
-                        class="rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                        class="shrink-0 whitespace-nowrap rounded-lg border border-white/30 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:px-4"
                     >
                         {{ t('header.login') }}
                     </router-link>
@@ -97,6 +100,11 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
 import { setLocale } from '../../i18n';
+
+defineProps({
+    // Slides the header out of view on mobile; ignored from md up
+    hidden: { type: Boolean, default: false },
+});
 
 const authStore = useAuthStore();
 const router = useRouter();

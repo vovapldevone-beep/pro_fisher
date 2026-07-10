@@ -48,6 +48,18 @@
     "date": "Дата улову",
     "lake": "Озеро",
     "lakePlaceholder": "Вибери озеро",
+    "noLakesFound": "Озер не знайдено",
+    "lakeRequired": "Вибери озеро зі списку",
+    "lakeOrLocationRequired": "Вибери озеро або вкажи своє місце",
+    "place": "Місце",
+    "placePlaceholder": "Вибери озеро або введи своє місце",
+    "useAsOwnPlace": "Використати як своє місце",
+    "lakesGroup": "Озера",
+    "placesGroup": "Місця на карті",
+    "searchingPlaces": "Пошук місць…",
+    "useGps": "Використовувати GPS",
+    "useGpsHint": "Визначити місце автоматично",
+    "gpsLocating": "Визначення…",
     "notesPlaceholder": "Розкажи про улов..."
   },
   "map": {
@@ -122,7 +134,9 @@
     "daysLeft": "Залишилось {days} днів",
     "avatarHint": "Натисни на іконку щоб змінити фото",
     "name": "Ім'я",
-    "saveError": "Помилка збереження"
+    "saveError": "Помилка збереження",
+    "newCatch": "Улов",
+    "newPost": "Пост"
   },
   "stats": {
     "catches": "уловів",
@@ -155,6 +169,15 @@
     "catch": "Ви додали улов {fish_name} {weight} кг на озері {lake_name}",
     "following": "Ви підписались на {name}",
     "follower": "{name} підписався на вас"
+  },
+  "friends": {
+    "button": "Мої друзі",
+    "title": "Мої друзі",
+    "following": "Підписки",
+    "followers": "Підписники",
+    "mutual": "Взаємно",
+    "emptyFollowing": "Ви ще ні на кого не підписані",
+    "emptyFollowers": "На вас ще ніхто не підписався"
   },
   "fisher": {
     "publications": "Публікації",

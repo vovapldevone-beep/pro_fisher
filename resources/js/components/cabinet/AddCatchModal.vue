@@ -61,19 +61,27 @@
             </div>
         </div>
 
-        <!-- Lake -->
+        <!-- Place: a lake from the list, a typed spot, GPS or a point on the map -->
         <div>
-            <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('catch.lake') }}</label>
-            <select
+            <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ t('catch.place') }}</label>
+            <LakeSelect
                 v-model="form.lake_id"
-                required
-                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
-            >
-                <option value="" disabled>{{ t('catch.lakePlaceholder') }}</option>
-                <option v-for="lake in lakes" :key="lake.id" :value="lake.id">
-                    {{ lake.name }}
-                </option>
-            </select>
+                v-model:location="form.location"
+                :lakes="lakes"
+                :placeholder="t('catch.placePlaceholder')"
+                :error="lakeError"
+                allow-gps
+                allow-custom
+                allow-map
+                :map-open="showMap"
+                :gps-loading="locating"
+                @use-gps="handleUseGps"
+                @toggle-map="toggleMap"
+                @place-selected="handlePlaceSelected"
+            />
+            <div v-show="showMap" ref="mapEl" class="mt-2 h-52 w-full overflow-hidden rounded-xl border border-slate-200" />
+            <p v-if="showMap" class="mt-1 text-xs text-slate-400">{{ t('modal.mapHint') }}</p>
+            <p v-if="gpsError" class="mt-1 text-xs text-red-500">{{ gpsError }}</p>
         </div>
 
         <!-- Notes -->
@@ -91,8 +99,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useGeolocation } from '../../composables/useGeolocation';
+import LakeSelect from '../shared/LakeSelect.vue';
 import ModalDialog from '../shared/ModalDialog.vue';
 
 const { t } = useI18n();
@@ -105,9 +117,20 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit']);
 
-const form = ref({ fish_name: '', weight: '', caught_at: today(), lake_id: '', notes: '' });
+const { locating, error: gpsError, locate, reverseGeocode } = useGeolocation();
+
+function emptyForm() {
+    return { fish_name: '', weight: '', caught_at: today(), lake_id: '', notes: '', location: '' };
+}
+
+const form = ref(emptyForm());
 const photoFile = ref(null);
 const photoPreview = ref(null);
+const lakeError = ref('');
+const showMap = ref(false);
+const mapEl = ref(null);
+let mapInstance = null;
+let marker = null;
 
 function today() {
     return new Date().toISOString().split('T')[0];
@@ -115,10 +138,20 @@ function today() {
 
 watch(() => props.show, (val) => {
     if (val) {
-        form.value = { fish_name: '', weight: '', caught_at: today(), lake_id: '', notes: '' };
+        form.value = emptyForm();
         photoFile.value = null;
         photoPreview.value = null;
+        lakeError.value = '';
+        gpsError.value = '';
+        showMap.value = false;
+    } else {
+        destroyMap();
     }
+});
+
+// Either a lake or a location satisfies the requirement, so clear the error on both
+watch(() => [form.value.lake_id, form.value.location], ([id, location]) => {
+    if (id || location) lakeError.value = '';
 });
 
 function onPhotoChange(e) {
@@ -128,11 +161,85 @@ function onPhotoChange(e) {
     photoPreview.value = URL.createObjectURL(file);
 }
 
+// ─── Location: map picker ─────────────────────────────────────────────────────
+
+async function toggleMap() {
+    showMap.value = !showMap.value;
+    if (showMap.value) {
+        await nextTick();
+        initMap();
+    } else {
+        destroyMap();
+    }
+}
+
+function initMap() {
+    if (mapInstance || !mapEl.value) return;
+    mapInstance = L.map(mapEl.value).setView([50.4501, 30.5234], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+    }).addTo(mapInstance);
+    mapInstance.on('click', (e) => {
+        const { lat, lng } = e.latlng;
+        form.value.lake_id = '';
+        form.value.location = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        placeMarker(lat, lng);
+    });
+}
+
+function placeMarker(lat, lng) {
+    if (!mapInstance) return;
+    if (marker) marker.remove();
+    marker = L.marker([lat, lng]).addTo(mapInstance);
+    mapInstance.setView([lat, lng], Math.max(mapInstance.getZoom(), 12));
+}
+
+function destroyMap() {
+    if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+        marker = null;
+    }
+}
+
+// A geocoded suggestion carries coordinates, so the open map can follow it
+function handlePlaceSelected(place) {
+    if (showMap.value) placeMarker(place.lat, place.lon);
+}
+
+// ─── Location: device GPS ─────────────────────────────────────────────────────
+
+async function handleUseGps() {
+    let coords;
+    try {
+        coords = await locate();
+    } catch {
+        return; // gpsError already carries the reason
+    }
+
+    const { latitude, longitude } = coords;
+    // A lake and a free-form location are mutually exclusive
+    form.value.lake_id = '';
+    form.value.location = `${latitude}, ${longitude}`;
+
+    const address = await reverseGeocode(latitude, longitude);
+    if (address) form.value.location = address;
+
+    if (showMap.value) placeMarker(latitude, longitude);
+}
+
 function handleSubmit() {
+    // The combobox is not a native control, so the browser cannot enforce `required`
+    if (!form.value.lake_id && !form.value.location.trim()) {
+        lakeError.value = t('catch.lakeOrLocationRequired');
+        return;
+    }
+
     const fd = new FormData();
     fd.append('fish_name', form.value.fish_name);
     fd.append('caught_at', form.value.caught_at);
-    fd.append('lake_id', form.value.lake_id);
+    if (form.value.lake_id) fd.append('lake_id', form.value.lake_id);
+    if (form.value.location.trim()) fd.append('location', form.value.location.trim());
     if (form.value.weight) fd.append('weight', form.value.weight);
     if (form.value.notes) fd.append('notes', form.value.notes);
     if (photoFile.value) fd.append('photo', photoFile.value);

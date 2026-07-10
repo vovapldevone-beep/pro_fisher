@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/profile', [AuthController::class, 'updateProfile']);
     Route::get('/cabinet', [CabinetController::class, 'show']);
     Route::get('/cabinet/achievements', [CabinetController::class, 'achievements']);
+    Route::get('/cabinet/friends', [CabinetController::class, 'friends']);
 
     Route::post('/fishers/{user}/follow', [FisherController::class, 'follow']);
     Route::delete('/fishers/{user}/follow', [FisherController::class, 'unfollow']);

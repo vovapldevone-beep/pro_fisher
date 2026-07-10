@@ -39,7 +39,8 @@
       "Bash(php -l app/Http/Controllers/Api/AdminController.php)",
       "Bash(composer validate *)",
       "Bash(timeout 12 npx vite --clearScreen=false)",
-      "Bash(php -v)"
+      "Bash(php -v)",
+      "Bash(grep -n \"^VITE_APP_NAME\\\\|^APP_LOCALE\\\\|^$\" .env.example)"
     ]
   }
 }
