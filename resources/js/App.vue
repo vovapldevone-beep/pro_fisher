@@ -1,6 +1,6 @@
 <template>
     <div
-        class="flex flex-col overflow-hidden bg-slate-50 text-slate-900"
+        class="flex flex-col overflow-hidden overscroll-none bg-slate-50 text-slate-900"
         style="height: 100vh; height: 100dvh"
     >
         <!-- Fixed header (still position:fixed, works fine) -->
@@ -13,9 +13,11 @@
             :class="headerHidden ? 'pt-0' : 'pt-[65px]'"
         >
             <AppSidebar v-if="authStore.isAuthenticated" />
+            <!-- overscroll-y-none kills the iOS rubber-band: bouncing past the edge
+                 reports scrollTop outside its bounds and makes the header flap. -->
             <main
                 ref="mainEl"
-                class="min-h-0 flex-1 overflow-y-auto"
+                class="min-h-0 flex-1 overflow-y-auto overscroll-y-none"
                 :class="authStore.isAuthenticated ? 'md:ml-16' : ''"
             >
                 <router-view />

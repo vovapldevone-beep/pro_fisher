@@ -1,8 +1,9 @@
 <template>
-    <div class="flex items-center gap-4 rounded-xl p-3 transition hover:bg-slate-50">
-        <div class="flex w-28 shrink-0 items-center gap-2">
+    <div class="flex items-center gap-3 rounded-xl p-2 transition hover:bg-slate-50 sm:gap-4 sm:p-3">
+        <!-- Below sm only the avatar survives: a 320px row cannot hold the name too -->
+        <div class="flex shrink-0 items-center gap-2 sm:w-28">
             <UserAvatar :user="catchItem.user" size="md" />
-            <div class="min-w-0">
+            <div class="hidden min-w-0 sm:block">
                 <p class="truncate text-sm font-medium text-slate-900">{{ catchItem.user?.name }}</p>
                 <p class="text-xs text-slate-400">{{ timeAgo }}</p>
             </div>
@@ -12,18 +13,18 @@
             v-if="catchItem.photo_url"
             :src="catchItem.photo_url"
             :alt="catchItem.fish_name"
-            class="h-14 w-20 shrink-0 rounded-lg object-cover"
+            class="h-12 w-16 shrink-0 rounded-lg object-cover sm:h-14 sm:w-20"
         />
         <div
             v-else
-            class="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xl"
+            class="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xl sm:h-14 sm:w-20"
         >
             🐟
         </div>
 
         <div class="min-w-0 flex-1">
             <div class="flex items-baseline justify-between gap-2">
-                <p class="font-semibold text-slate-900">{{ catchItem.fish_name }}</p>
+                <p class="min-w-0 truncate font-semibold text-slate-900">{{ catchItem.fish_name }}</p>
                 <p v-if="catchItem.weight" class="shrink-0 text-sm font-medium text-slate-600">
                     {{ catchItem.weight }} кг
                 </p>

@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\SpaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/{any}', function () {
-    return view('app');
-})->where('any', '^(?!api|sanctum|storage|up).*$');
+Route::get('/sitemap.xml', SitemapController::class);
 
-Route::get('/', function () {
-    return view('app');
-});
+// SPA shell for every other route, with per-route SEO rendered in PHP.
+// The regex excludes API, framework and the sitemap paths.
+Route::get('/{any}', SpaController::class)
+    ->where('any', '^(?!api|sanctum|storage|up|sitemap\.xml).*$');
+
+Route::get('/', SpaController::class);

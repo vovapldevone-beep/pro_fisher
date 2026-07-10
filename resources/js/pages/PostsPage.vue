@@ -74,23 +74,34 @@
             </div>
         </div>
 
-        <div v-if="loading" class="py-24 text-center text-slate-500">{{ t('posts.loading') }}</div>
-        <div v-else-if="!filteredCatches.length" class="py-24 text-center text-slate-500">
+        <div v-if="!loaded" class="py-24 text-center text-slate-500">
+            {{ t('posts.loading') }}
+        </div>
+        <div v-else-if="!catches.length" class="py-24 text-center text-slate-500">
             <span v-if="activeFilter === 'liked'">{{ t('posts.emptyLiked') }}</span>
             <span v-else-if="activeFilter === 'commented'">{{ t('posts.emptyCommented') }}</span>
             <span v-else>{{ t('posts.empty') }}</span>
         </div>
 
-        <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <PostCard
-                v-for="catchItem in filteredCatches"
-                :key="catchItem.id"
-                :catch-item="catchItem"
-                :selected="selectedPost?.id === catchItem.id"
-                @select="selectPost(catchItem)"
-                @like-changed="handleLikeChanged"
-            />
-        </div>
+        <template v-else>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <PostCard
+                    v-for="catchItem in catches"
+                    :key="catchItem.id"
+                    :catch-item="catchItem"
+                    :selected="selectedPost?.id === catchItem.id"
+                    @select="selectPost(catchItem)"
+                    @like-changed="handleLikeChanged"
+                />
+            </div>
+
+            <!-- Infinite scroll sentinel -->
+            <div ref="sentinel" class="mt-4 h-4"></div>
+
+            <div v-if="loading" class="py-6 text-center text-sm text-slate-400">
+                {{ t('posts.loading') }}
+            </div>
+        </template>
 
         <!-- Catch detail modal -->
         <CatchDetailModal
@@ -129,9 +140,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import api from '../api/client';
+import { fetchPosts } from '../api/home';
+import { useInfiniteScroll } from '../composables/useInfiniteScroll';
 import AddCatchModal from '../components/cabinet/AddCatchModal.vue';
 import AddPostModal from '../components/cabinet/AddPostModal.vue';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
@@ -147,7 +159,9 @@ const catchesStore = useCatchesStore();
 const lakesStore = useLakesStore();
 
 const catches = ref([]);
-const loading = ref(true);
+// `loading` guards the request; `loaded` tells the first fetch from an empty result
+const loading = ref(false);
+const loaded = ref(false);
 const selectedPost = ref(null);
 const editingPost = ref(null);
 const activeFilter = ref('all');
@@ -156,33 +170,72 @@ const showAddPost = ref(false);
 
 const typeFilter = ref('all');
 
+// `page` holds the *next* page to fetch, so the comparison must be inclusive
+const page = ref(1);
+const lastPage = ref(1);
+const hasMore = computed(() => page.value <= lastPage.value);
+const sentinel = ref(null);
+
 const filterTabs = computed(() => [
     { key: 'all', label: t('posts.all') },
     { key: 'liked', label: t('posts.liked') },
     { key: 'commented', label: t('posts.commented') },
 ]);
 
-const filteredCatches = computed(() => {
-    let list = catches.value;
-    if (typeFilter.value === 'post') list = list.filter((c) => c.type === 'post');
-    if (typeFilter.value === 'catch') list = list.filter((c) => c.type === 'catch' || !c.type);
-    if (activeFilter.value === 'liked') return list.filter((c) => c.is_liked);
-    if (activeFilter.value === 'commented') return list.filter((c) => c.is_commented);
-    return list;
-});
+// Both filters are applied server-side, so only matching rows are ever downloaded
+function activeParams() {
+    return {
+        ...(typeFilter.value !== 'all' ? { type: typeFilter.value } : {}),
+        ...(['liked', 'commented'].includes(activeFilter.value) ? { filter: activeFilter.value } : {}),
+    };
+}
 
-async function loadPosts() {
+// Bumped on every reset; a response from an older request is discarded, so
+// switching filters mid-flight cannot paint stale cards.
+let requestId = 0;
+
+async function loadPosts(reset = false) {
+    if (!reset && loading.value) return;
+    if (!reset && !hasMore.value && catches.value.length) return;
+
+    const id = reset ? ++requestId : requestId;
+
     loading.value = true;
     try {
-        const { data } = await api.get('/posts');
-        catches.value = data.data;
+        const res = await fetchPosts({ page: page.value, ...activeParams() });
+        if (id !== requestId) return;
+
+        catches.value = reset ? res.data : [...catches.value, ...res.data];
+        lastPage.value = res.meta.last_page;
+        page.value = res.meta.current_page + 1;
     } finally {
-        loading.value = false;
+        if (id === requestId) {
+            loading.value = false;
+            loaded.value = true;
+        }
     }
 }
 
+function reloadFeed() {
+    catches.value = [];
+    page.value = 1;
+    lastPage.value = 1;
+    loaded.value = false;
+    loadPosts(true);
+}
+
+// A filter change means a different result set — start the feed over
+watch([activeFilter, typeFilter], reloadFeed);
+
+useInfiniteScroll(sentinel, {
+    loading,
+    hasMore,
+    // Only ever appends; the first page comes from onMounted / reloadFeed
+    onLoad: () => catches.value.length && loadPosts(),
+});
+
 onMounted(async () => {
-    await Promise.all([loadPosts(), lakesStore.loadLakes()]);
+    await Promise.all([loadPosts(true), lakesStore.loadLakes()]);
 });
 
 function selectPost(catchItem) {
@@ -224,13 +277,13 @@ function handleDeleted(id) {
 async function handleAddCatch(formData) {
     await catchesStore.addCatch(formData);
     showAddCatch.value = false;
-    await loadPosts();
+    reloadFeed(); // the new record belongs on page 1
 }
 
 async function handleAddPost(formData) {
     await catchesStore.addCatch(formData);
     showAddPost.value = false;
-    await loadPosts();
+    reloadFeed();
 }
 </script>
 
