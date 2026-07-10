@@ -49,7 +49,8 @@
       "Bash(php -l app/Http/Requests/Catch/UpdateCatchRequest.php)",
       "Bash(awk '{print \"user\"$2\": \"$1\" фото\"}')",
       "Bash(php -l database/seeders/PhotoContentSeeder.php)",
-      "Bash(php -l database/migrations/2026_07_10_130000_repoint_foreign_keys_from_lakes_old.php)"
+      "Bash(php -l database/migrations/2026_07_10_130000_repoint_foreign_keys_from_lakes_old.php)",
+      "Bash(exit 1)"
     ]
   }
 }
