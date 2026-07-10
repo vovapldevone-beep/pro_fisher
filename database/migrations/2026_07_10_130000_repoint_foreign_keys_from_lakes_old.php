@@ -8,34 +8,42 @@ return new class extends Migration
 {
     /**
      * On the production database `lakes` was renamed to `lakes_old` and a fresh
-     * `lakes` was created, but the foreign keys were never re-pointed. Inserts
-     * into `catches` therefore validate against the wrong (stale) table.
+     * `lakes` was created, but the foreign keys kept pointing at the stale table,
+     * so inserts into `catches` were validated against the wrong rows.
      *
-     * This finds every constraint still referencing `lakes_old`, nulls or removes
-     * the rows that would violate the new key, then rebuilds it against `lakes`.
+     * `lakes_old` itself is never touched — only the child tables' constraints.
      *
-     * Safe to run where `lakes_old` does not exist — it simply does nothing.
+     * Written to be re-runnable from *any* state: DDL is not transactional in
+     * MySQL/MariaDB, so a failed run can leave a constraint dropped. Each table
+     * is therefore reconciled independently against the desired end state.
      */
+    private const CHILD_TABLES = ['catches', 'lake_photos', 'lake_reviews', 'permits'];
+
+    private const COLUMN = 'lake_id';
+
     public function up(): void
     {
-        if (! Schema::hasTable('lakes_old')) {
-            return;
-        }
+        foreach (self::CHILD_TABLES as $table) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, self::COLUMN)) {
+                continue;
+            }
 
-        foreach ($this->staleForeignKeys() as $fk) {
-            $table = $fk->TABLE_NAME;
-            $column = $fk->COLUMN_NAME;
-            $name = $fk->CONSTRAINT_NAME;
-            $onDelete = $fk->DELETE_RULE; // CASCADE | SET NULL | RESTRICT | NO ACTION
+            $fk = $this->foreignKeyOn($table);
 
-            DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$name}`");
+            if ($fk && $fk->REFERENCED_TABLE_NAME === 'lakes') {
+                continue; // already correct
+            }
 
-            $this->reconcileOrphans($table, $column);
+            if ($fk) {
+                DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$fk->CONSTRAINT_NAME}`");
+            }
 
-            $action = $onDelete === 'NO ACTION' ? 'RESTRICT' : $onDelete;
+            $this->reconcileOrphans($table);
+
+            $name = $fk->CONSTRAINT_NAME ?? "{$table}_".self::COLUMN.'_foreign';
             DB::statement(
                 "ALTER TABLE `{$table}` ADD CONSTRAINT `{$name}` ".
-                "FOREIGN KEY (`{$column}`) REFERENCES `lakes` (`id`) ON DELETE {$action}"
+                'FOREIGN KEY (`'.self::COLUMN.'`) REFERENCES `lakes` (`id`) ON DELETE CASCADE'
             );
         }
     }
@@ -45,44 +53,53 @@ return new class extends Migration
         // Deliberately irreversible: pointing keys back at a stale table is never wanted.
     }
 
-    /** @return array<int, object> */
-    private function staleForeignKeys(): array
+    private function foreignKeyOn(string $table): ?object
     {
-        return DB::select("
-            SELECT k.TABLE_NAME, k.COLUMN_NAME, k.CONSTRAINT_NAME, r.DELETE_RULE
-            FROM information_schema.KEY_COLUMN_USAGE k
-            JOIN information_schema.REFERENTIAL_CONSTRAINTS r
-              ON r.CONSTRAINT_NAME = k.CONSTRAINT_NAME
-             AND r.CONSTRAINT_SCHEMA = k.TABLE_SCHEMA
-            WHERE k.TABLE_SCHEMA = DATABASE()
-              AND k.REFERENCED_TABLE_NAME = 'lakes_old'
-        ");
+        return DB::select('
+            SELECT CONSTRAINT_NAME, REFERENCED_TABLE_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND COLUMN_NAME = ?
+              AND REFERENCED_TABLE_NAME IS NOT NULL
+        ', [$table, self::COLUMN])[0] ?? null;
     }
 
     /**
      * Rows pointing at a lake that no longer exists would block the new key.
      * Nullable columns lose the link, non-nullable rows have to go.
      */
-    private function reconcileOrphans(string $table, string $column): void
+    private function reconcileOrphans(string $table): void
     {
         $orphans = DB::table($table)
-            ->whereNotNull($column)
-            ->whereNotIn($column, fn ($q) => $q->select('id')->from('lakes'));
+            ->whereNotNull(self::COLUMN)
+            ->whereNotIn(self::COLUMN, fn ($q) => $q->select('id')->from('lakes'));
 
         $count = (clone $orphans)->count();
         if ($count === 0) {
             return;
         }
 
-        $nullable = collect(DB::select("SHOW COLUMNS FROM `{$table}` LIKE ?", [$column]))
-            ->first()?->Null === 'YES';
-
-        if ($nullable) {
-            $orphans->update([$column => null]);
-            echo "  {$table}.{$column}: {$count} рядків відв'язано (NULL)\n";
+        if ($this->columnIsNullable($table)) {
+            $orphans->update([self::COLUMN => null]);
+            echo "  {$table}: {$count} рядків відв'язано (NULL)\n";
         } else {
             $orphans->delete();
-            echo "  {$table}.{$column}: {$count} рядків видалено (колонка NOT NULL)\n";
+            echo "  {$table}: {$count} рядків видалено (колонка NOT NULL)\n";
         }
+    }
+
+    /** MariaDB rejects placeholders in `SHOW COLUMNS ... LIKE ?`, hence information_schema. */
+    private function columnIsNullable(string $table): bool
+    {
+        $row = DB::select('
+            SELECT IS_NULLABLE
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND COLUMN_NAME = ?
+        ', [$table, self::COLUMN])[0] ?? null;
+
+        return $row?->IS_NULLABLE === 'YES';
     }
 };
