@@ -10,6 +10,11 @@ export async function fetchAchievements() {
     return data;
 }
 
+export async function fetchFriends() {
+    const { data } = await api.get('/cabinet/friends');
+    return data;
+}
+
 export async function updateProfile(formData) {
     const { data } = await api.post('/user/profile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

@@ -1,40 +1,43 @@
 <template>
     <Teleport to="body">
-        <Transition name="slide">
+        <Transition name="zoom">
             <div
                 v-if="show"
-                class="fixed right-4 z-50 w-96"
-                style="top: 65px; height: calc(100vh - 65px - 1rem)"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm sm:p-6"
+                @click.self="$emit('close')"
             >
-                <div class="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                <div class="zoom-panel relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[88vh] sm:rounded-2xl md:flex-row">
 
-                    <!-- Header -->
-                    <div class="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
-                        <span class="font-semibold text-slate-800">{{ t('post.details') }}</span>
-                        <button
-                            type="button"
-                            class="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            @click="$emit('close')"
-                        >
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
+                    <!-- Close button, pinned to the panel corner -->
+                    <button
+                        type="button"
+                        class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65 md:bg-slate-100/90 md:text-slate-500 md:hover:bg-slate-200 md:hover:text-slate-700"
+                        :aria-label="t('modal.cancel')"
+                        @click="$emit('close')"
+                    >
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
 
-                    <!-- Photo -->
-                    <div class="relative flex-shrink-0">
+                    <!-- Photo (left side on desktop). object-contain: never crop the shot,
+                         letterbox it against the dark backing instead. -->
+                    <div class="flex shrink-0 items-center justify-center bg-slate-900 md:h-full md:w-3/5">
                         <img
                             v-if="post.photo_url"
                             :src="post.photo_url"
                             :alt="post.fish_name"
-                            class="h-56 w-full object-cover"
+                            class="max-h-[40vh] w-full object-contain sm:max-h-[50vh] md:h-full md:max-h-full"
                         />
-                        <div v-else class="flex h-56 w-full items-center justify-center bg-slate-100 text-6xl">🐟</div>
+                        <div v-else class="flex h-56 w-full items-center justify-center text-6xl sm:h-72 md:h-full">🐟</div>
                     </div>
 
-                    <!-- Post info -->
-                    <div class="flex-shrink-0 border-b border-slate-100 px-4 py-3">
+                    <!-- Details column -->
+                    <div class="flex min-h-0 flex-1 flex-col">
+
+                    <!-- Post info. On desktop the close button sits in this column's
+                         top-right corner, so the content starts below it. -->
+                    <div class="flex-shrink-0 border-b border-slate-100 px-4 py-3 md:pt-14">
                         <!-- Author -->
                         <div v-if="post.user" class="mb-3 flex items-center gap-2">
                             <UserAvatar :user="post.user" size="sm" />
@@ -124,6 +127,7 @@
                         </div>
                     </div>
 
+                    </div><!-- /details column -->
                 </div>
             </div>
         </Transition>
@@ -131,9 +135,10 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fetchComments, postComment } from '../../api/comments';
+import { useScrollLock } from '../../composables/useScrollLock';
 import { useAuthStore } from '../../stores/auth';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
@@ -147,6 +152,15 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'comment-added']);
+
+useScrollLock(toRef(props, 'show'));
+
+function onKeydown(e) {
+    if (e.key === 'Escape' && props.show) emit('close');
+}
+
+onMounted(() => document.addEventListener('keydown', onKeydown));
+onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 
 const comments = ref([]);
 const loadingComments = ref(false);
@@ -223,13 +237,47 @@ watch(() => props.post?.id, (id) => {
 </script>
 
 <style scoped>
-.slide-enter-active,
-.slide-leave-active {
-    transition: transform 0.25s ease, opacity 0.25s ease;
+/* Backdrop fades; the panel zooms up underneath it. */
+.zoom-enter-active,
+.zoom-leave-active {
+    transition: opacity 0.22s ease;
 }
-.slide-enter-from,
-.slide-leave-to {
-    transform: translateX(1.5rem);
+.zoom-enter-from,
+.zoom-leave-to {
     opacity: 0;
+}
+
+/* Overshoot on the way in makes the zoom feel springy rather than mechanical. */
+.zoom-enter-active .zoom-panel {
+    transition:
+        transform 0.32s cubic-bezier(0.22, 1.2, 0.36, 1),
+        opacity 0.32s ease;
+}
+.zoom-enter-from .zoom-panel {
+    transform: scale(0.9) translateY(12px);
+    opacity: 0;
+}
+
+/* Leaving is quicker and linear — a slow exit feels sluggish. */
+.zoom-leave-active .zoom-panel {
+    transition:
+        transform 0.18s ease-in,
+        opacity 0.18s ease-in;
+}
+.zoom-leave-to .zoom-panel {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .zoom-enter-active .zoom-panel,
+    .zoom-leave-active .zoom-panel {
+        transition: opacity 0.15s ease;
+        transform: none;
+    }
+    .zoom-enter-from .zoom-panel,
+    .zoom-leave-to .zoom-panel {
+        transform: none;
+    }
 }
 </style>

@@ -76,6 +76,40 @@ class CabinetController extends Controller
         ]);
     }
 
+    public function friends(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $following = Follow::where('follower_id', $user->id)
+            ->with('following:id,name,avatar_url,badge')
+            ->get()
+            ->pluck('following')
+            ->filter();
+
+        $followers = Follow::where('following_id', $user->id)
+            ->with('follower:id,name,avatar_url,badge')
+            ->get()
+            ->pluck('follower')
+            ->filter();
+
+        $followingIds = $following->pluck('id')->all();
+
+        $shape = fn (User $u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'avatar_url' => $u->avatar_url,
+            'badge' => $u->badge,
+        ];
+
+        return response()->json([
+            'following' => $following->map($shape)->values(),
+            'followers' => $followers->map(fn (User $u) => $shape($u) + [
+                // Lets the UI mark people who follow you back
+                'is_following' => in_array($u->id, $followingIds, true),
+            ])->values(),
+        ]);
+    }
+
     public function achievements(Request $request): JsonResponse
     {
         $user = $request->user();

@@ -110,6 +110,7 @@
 
                 <!-- Sidebar widgets -->
                 <div class="space-y-4">
+                    <!-- Купівля дозволів приховано
                     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h3 class="font-bold text-slate-900">Купити дозвіл онлайн</h3>
                         <div class="mt-4 space-y-2">
@@ -130,6 +131,7 @@
                             Купити дозвіл
                         </button>
                     </div>
+                    -->
 
                     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h3 class="font-bold text-slate-900">Контакти</h3>
@@ -382,7 +384,7 @@ useHead({
 });
 const activeTab = ref('overview');
 const activePhotoIndex = ref(0);
-const selectedPermit = ref(1);
+// const selectedPermit = ref(1); // використовувався віджетом купівлі дозволу
 
 const tabs = computed(() => [
     { id: 'overview', label: 'Огляд' },

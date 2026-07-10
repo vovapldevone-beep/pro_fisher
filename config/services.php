@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'google_analytics' => [
+        // Leave unset to disable the tag (locally, in tests). Set it in .env on the server.
+        'id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
 ];

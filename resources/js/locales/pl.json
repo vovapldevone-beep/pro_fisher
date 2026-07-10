@@ -48,6 +48,18 @@
     "date": "Data połowu",
     "lake": "Jezioro",
     "lakePlaceholder": "Wybierz jezioro",
+    "noLakesFound": "Nie znaleziono jezior",
+    "lakeRequired": "Wybierz jezioro z listy",
+    "lakeOrLocationRequired": "Wybierz jezioro lub podaj własne miejsce",
+    "place": "Miejsce",
+    "placePlaceholder": "Wybierz jezioro lub wpisz własne miejsce",
+    "useAsOwnPlace": "Użyj jako własne miejsce",
+    "lakesGroup": "Jeziora",
+    "placesGroup": "Miejsca na mapie",
+    "searchingPlaces": "Szukanie miejsc…",
+    "useGps": "Użyj GPS",
+    "useGpsHint": "Określ miejsce automatycznie",
+    "gpsLocating": "Ustalanie…",
     "notesPlaceholder": "Opowiedz o połowie..."
   },
   "map": {
@@ -122,7 +134,9 @@
     "daysLeft": "Pozostało {days} dni",
     "avatarHint": "Kliknij ikonę aby zmienić zdjęcie",
     "name": "Imię",
-    "saveError": "Błąd zapisywania"
+    "saveError": "Błąd zapisywania",
+    "newCatch": "Połów",
+    "newPost": "Post"
   },
   "stats": {
     "catches": "połowów",
@@ -155,6 +169,15 @@
     "catch": "Dodałeś połów {fish_name} {weight} kg na jeziorze {lake_name}",
     "following": "Zacząłeś obserwować {name}",
     "follower": "{name} zaczął Cię obserwować"
+  },
+  "friends": {
+    "button": "Moi znajomi",
+    "title": "Moi znajomi",
+    "following": "Obserwowani",
+    "followers": "Obserwujący",
+    "mutual": "Wzajemnie",
+    "emptyFollowing": "Nie obserwujesz jeszcze nikogo",
+    "emptyFollowers": "Nikt Cię jeszcze nie obserwuje"
   },
   "fisher": {
     "publications": "Publikacje",

@@ -64,7 +64,7 @@ function formatError(error) {
 async function handleSubmit() {
     const success = await authStore.login(form);
     if (success) {
-        router.push(route.query.redirect || '/');
+        router.push(route.query.redirect || '/posts');
     }
 }
 </script>

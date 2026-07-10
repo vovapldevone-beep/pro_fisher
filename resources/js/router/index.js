@@ -88,11 +88,16 @@ router.beforeEach(async (to) => {
 
     if (to.meta.requiresAdmin) {
         if (!authStore.isAuthenticated) return { name: 'login' };
-        if (!authStore.user?.is_admin) return { name: 'home' };
+        if (!authStore.user?.is_admin) return { name: 'posts' };
     }
 
     if (to.meta.guest && authStore.isAuthenticated) {
-        return { name: 'home' };
+        return { name: 'posts' };
+    }
+
+    // Once signed in, "/" is no longer the landing page — Пости is
+    if (to.name === 'home' && authStore.isAuthenticated) {
+        return { name: 'posts' };
     }
 });
 

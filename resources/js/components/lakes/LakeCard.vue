@@ -30,7 +30,18 @@
 
             <div class="mb-4 space-y-2">
                 <p v-if="lake.region" class="text-sm text-emerald-700">{{ lake.region }}</p>
-                <p v-if="lake.address" class="text-sm text-slate-500">{{ lake.address }}</p>
+                <a
+                    v-if="lake.address"
+                    :href="mapsUrl"
+                    target="_blank"
+                    rel="noopener"
+                    class="group inline-flex items-start gap-1.5 text-sm text-slate-500 transition hover:text-blue-600"
+                >
+                    <svg class="mt-0.5 h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    <span class="group-hover:underline">{{ lake.address }}</span>
+                </a>
                 <p v-if="lake.price" class="text-lg font-semibold text-slate-900">
                     {{ lake.price }} {{ t('map.perDay') }}
                 </p>
@@ -115,7 +126,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
@@ -135,6 +146,17 @@ const props = defineProps({
 });
 
 defineEmits(['close']);
+
+// Coordinates drop a pin exactly on the lake; the address text is only a fallback
+// because Google resolves it to whatever it thinks matches.
+const mapsUrl = computed(() => {
+    const l = props.lake;
+    if (!l) return '';
+    if (l.latitude && l.longitude) {
+        return `https://www.google.com/maps?q=${l.latitude},${l.longitude}`;
+    }
+    return `https://www.google.com/maps/search/${encodeURIComponent(l.address)}`;
+});
 
 const authStore = useAuthStore();
 const router = useRouter();
