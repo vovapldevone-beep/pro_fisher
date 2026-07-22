@@ -242,11 +242,27 @@ class CabinetController extends Controller
         ];
     }
 
+    private const ACTIVITY_KEEP = 10;
+
     private function buildActivity(User $user): array
     {
-        return Activity::where('user_id', $user->id)
-            ->latest()
-            ->limit(15)
+        // The feed only ever shows the newest N entries, so everything older is
+        // dead weight — prune it here instead of letting the table grow forever.
+        $keep = Activity::where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id') // tiebreaker for equal timestamps (e.g. seeded rows)
+            ->limit(self::ACTIVITY_KEEP)
+            ->pluck('id');
+
+        if ($keep->count() === self::ACTIVITY_KEEP) {
+            Activity::where('user_id', $user->id)
+                ->whereNotIn('id', $keep)
+                ->delete();
+        }
+
+        return Activity::whereIn('id', $keep)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->get()
             ->map(function (Activity $activity) {
                 $d = $activity->data;

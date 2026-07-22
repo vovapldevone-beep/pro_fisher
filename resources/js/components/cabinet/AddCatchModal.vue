@@ -1,9 +1,14 @@
 <template>
     <ModalDialog
         :show="show"
-        :title="t('catch.new')"
         :saving="saving"
         :submit-label="t('catch.add')"
+        :tabs="[
+            { key: 'post', label: t('post.new') },
+            { key: 'catch', label: t('catch.new') },
+        ]"
+        active-tab="catch"
+        @tab="$emit('switch')"
         @close="$emit('close')"
         @submit="handleSubmit"
     >
@@ -115,7 +120,7 @@ const props = defineProps({
     saving: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'submit', 'switch']);
 
 const { locating, error: gpsError, locate, reverseGeocode } = useGeolocation();
 

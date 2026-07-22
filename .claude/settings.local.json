@@ -54,7 +54,11 @@
       "Bash(composer --version)",
       "Bash(xargs -I{} basename {})",
       "Bash(composer require *)",
-      "Bash(php -l app/Http/Controllers/Api/GoogleAuthController.php)"
+      "Bash(php -l app/Http/Controllers/Api/GoogleAuthController.php)",
+      "Bash(php -l app/Http/Controllers/Api/FishHuntController.php)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON валідний'\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON ок'\\)\")",
+      "Bash(python3 -c \"import xml.dom.minidom,sys; xml.dom.minidom.parse\\('public/favicon.svg'\\); print\\('SVG валідний'\\)\")"
     ]
   }
 }

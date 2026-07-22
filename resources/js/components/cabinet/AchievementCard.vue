@@ -41,6 +41,14 @@
                 />
             </div>
         </div>
+
+        <router-link
+            v-if="achievement.id === 'fish_hunt'"
+            to="/raffle"
+            class="mt-3 inline-block text-xs font-semibold text-emerald-600 hover:underline"
+        >
+            {{ t('fish.details') }}
+        </router-link>
     </div>
 </template>
 

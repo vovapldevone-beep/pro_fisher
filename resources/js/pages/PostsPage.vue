@@ -54,23 +54,15 @@
                     </button>
                 </template>
 
-                <!-- Action buttons -->
-                <template v-if="authStore.isAuthenticated">
-                    <button
-                        type="button"
-                        class="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                        @click="showAddCatch = true"
-                    >
-                        {{ t('posts.addCatch') }}
-                    </button>
-                    <button
-                        type="button"
-                        class="rounded-lg border border-blue-400 px-4 py-1.5 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
-                        @click="showAddPost = true"
-                    >
-                        {{ t('posts.addPost') }}
-                    </button>
-                </template>
+                <!-- Action button -->
+                <button
+                    v-if="authStore.isAuthenticated"
+                    type="button"
+                    class="rounded-lg border border-emerald-500 px-4 py-1.5 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+                    @click="showAddPost = true"
+                >
+                    + {{ t('common.addPublication') }}
+                </button>
             </div>
         </div>
 
@@ -85,14 +77,26 @@
 
         <template v-else>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <PostCard
+                <!-- relative isolate: lets a fish tuck behind the card (-z-10) without
+                     falling behind the whole page -->
+                <div
                     v-for="catchItem in catches"
                     :key="catchItem.id"
-                    :catch-item="catchItem"
-                    :selected="selectedPost?.id === catchItem.id"
-                    @select="selectPost(catchItem)"
-                    @like-changed="handleLikeChanged"
-                />
+                    class="relative isolate"
+                >
+                    <PostCard
+                        :catch-item="catchItem"
+                        :selected="selectedPost?.id === catchItem.id"
+                        @select="selectPost(catchItem)"
+                        @like-changed="handleLikeChanged"
+                    />
+                    <HiddenFish
+                        v-for="fish in fishOn(catchItem.id)"
+                        :key="fish.id"
+                        :anchor="fish.anchor"
+                        @caught="catchFish(fish)"
+                    />
+                </div>
             </div>
 
             <!-- Infinite scroll sentinel -->
@@ -128,6 +132,7 @@
             :saving="catchesStore.saving"
             @submit="handleAddCatch"
             @close="showAddCatch = false"
+            @switch="showAddCatch = false; showAddPost = true"
         />
 
         <AddPostModal
@@ -135,6 +140,7 @@
             :saving="catchesStore.saving"
             @submit="handleAddPost"
             @close="showAddPost = false"
+            @switch="showAddPost = false; showAddCatch = true"
         />
     </div>
 </template>
@@ -149,13 +155,16 @@ import AddPostModal from '../components/cabinet/AddPostModal.vue';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
 import EditCatchModal from '../components/posts/EditCatchModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
+import HiddenFish from '../components/fish/HiddenFish.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
+import { useFishStore } from '../stores/fish';
 import { useLakesStore } from '../stores/lakes';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 const catchesStore = useCatchesStore();
+const fishStore = useFishStore();
 const lakesStore = useLakesStore();
 
 const catches = ref([]);
@@ -175,6 +184,69 @@ const page = ref(1);
 const lastPage = ref(1);
 const hasMore = computed(() => page.value <= lastPage.value);
 const sentinel = ref(null);
+
+// ─── Fish hunt ────────────────────────────────────────────────────────────────
+// Fish are dripped onto posts as they load (initial batch + infinite scroll).
+// There is no cap on how many are hidden — catching any counts toward 10. Once
+// the hunt is complete, generation stops and any leftover fish are removed.
+const placements = ref([]);
+const decidedPosts = new Set(); // post ids already rolled, so we never re-roll them
+
+const PLACE_CHANCE = 0.3;
+
+// Peek variants tuck behind the card edge (-z-10); text variants sit over the
+// card's bottom overlay (z-20). Position is otherwise random per placement.
+const FISH_ANCHORS = [
+    '-top-3 left-5 -z-10',
+    '-top-3 right-6 -z-10',
+    '-left-3 top-10 -z-10',
+    '-right-3 top-12 -z-10',
+    '-bottom-3 right-10 -z-10',
+    '-bottom-3 left-8 -z-10',
+    'bottom-3 left-3 z-20',
+    'bottom-11 right-4 z-20',
+];
+
+function placeFishOn(post) {
+    placements.value.push({
+        id: `fish-${post.id}-${Math.random().toString(36).slice(2, 7)}`,
+        postId: post.id,
+        anchor: FISH_ANCHORS[Math.floor(Math.random() * FISH_ANCHORS.length)],
+    });
+}
+
+// Hide fish among a freshly loaded batch of posts. No cap — but nothing new once
+// the hunt is done.
+function topUpFish(batch) {
+    if (! fishStore.loaded || fishStore.completed) return;
+
+    const fresh = batch.filter((p) => ! decidedPosts.has(p.id));
+    fresh.forEach((p) => decidedPosts.add(p.id));
+
+    for (const post of fresh) {
+        if (Math.random() < PLACE_CHANCE) placeFishOn(post);
+    }
+}
+
+function resetFish() {
+    placements.value = [];
+    decidedPosts.clear();
+}
+
+function fishOn(postId) {
+    return placements.value.filter((f) => f.postId === postId);
+}
+
+function catchFish(fish) {
+    placements.value = placements.value.filter((f) => f.id !== fish.id);
+    fishStore.recordFind();
+}
+
+// The 10th fish (caught anywhere — feed or modal) ends the hunt: sweep away any
+// leftover fish still hiding in the feed.
+watch(() => fishStore.completed, (done) => {
+    if (done) placements.value = [];
+});
 
 const filterTabs = computed(() => [
     { key: 'all', label: t('posts.all') },
@@ -208,6 +280,10 @@ async function loadPosts(reset = false) {
         catches.value = reset ? res.data : [...catches.value, ...res.data];
         lastPage.value = res.meta.last_page;
         page.value = res.meta.current_page + 1;
+
+        // Hide fish among the newly appended posts (initial batch is handled by
+        // the caller once fish progress is known)
+        if (! reset) topUpFish(res.data);
     } finally {
         if (id === requestId) {
             loading.value = false;
@@ -216,12 +292,15 @@ async function loadPosts(reset = false) {
     }
 }
 
-function reloadFeed() {
+async function reloadFeed() {
     catches.value = [];
+    resetFish();
     page.value = 1;
     lastPage.value = 1;
     loaded.value = false;
-    loadPosts(true);
+    await loadPosts(true);
+    // The feed is a different set now — re-hide the fish among it
+    topUpFish(catches.value);
 }
 
 // A filter change means a different result set — start the feed over
@@ -236,6 +315,10 @@ useInfiniteScroll(sentinel, {
 
 onMounted(async () => {
     await Promise.all([loadPosts(true), lakesStore.loadLakes()]);
+    // Fish placement needs the progress; the initial feed batch is already loaded
+    if (!fishStore.loaded) await fishStore.fetchProgress();
+    resetFish();
+    topUpFish(catches.value);
 });
 
 function selectPost(catchItem) {

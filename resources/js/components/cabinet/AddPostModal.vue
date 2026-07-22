@@ -1,10 +1,15 @@
 <template>
     <ModalDialog
         :show="show"
-        :title="t('post.new')"
         :saving="saving"
         :submit-label="t('post.publish')"
         :saving-label="t('post.publishing')"
+        :tabs="[
+            { key: 'post', label: t('post.new') },
+            { key: 'catch', label: t('catch.new') },
+        ]"
+        active-tab="post"
+        @tab="$emit('switch')"
         @close="$emit('close')"
         @submit="handleSubmit"
     >
@@ -79,7 +84,7 @@ const props = defineProps({
     saving: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'submit', 'switch']);
 
 const form = ref({ notes: '', location: '' });
 const photoFile = ref(null);

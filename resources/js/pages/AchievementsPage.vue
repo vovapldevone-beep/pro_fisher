@@ -68,23 +68,37 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { fetchAchievements } from '../api/cabinet';
 import AchievementCard from '../components/cabinet/AchievementCard.vue';
+import { useFishStore } from '../stores/fish';
 
 const { t } = useI18n();
+const fishStore = useFishStore();
 
 const loading = ref(true);
-const achievements = ref([]);
-const earnedCount = ref(0);
-const totalCount = ref(0);
+const apiAchievements = ref([]);
 
+// The fish hunt is stateful (stored in user_achievements) rather than computed
+// from stats, so it's merged in from the store instead of the achievements API.
+const fishAchievement = computed(() => ({
+    id: 'fish_hunt',
+    icon: 'fish',
+    title: 'Рибалка-шукач',
+    description: 'Знайди 10 захованих рибок',
+    progress: fishStore.found,
+    max: fishStore.total,
+    earned: fishStore.loaded && fishStore.found >= fishStore.total,
+}));
+
+const achievements = computed(() => [...apiAchievements.value, fishAchievement.value]);
 const earned = computed(() => achievements.value.filter((a) => a.earned));
 const notEarned = computed(() => achievements.value.filter((a) => !a.earned));
+const earnedCount = computed(() => earned.value.length);
+const totalCount = computed(() => achievements.value.length);
 
 onMounted(async () => {
     try {
         const data = await fetchAchievements();
-        achievements.value = data.achievements;
-        earnedCount.value = data.earned_count;
-        totalCount.value = data.total_count;
+        apiAchievements.value = data.achievements;
+        if (!fishStore.loaded) await fishStore.fetchProgress();
     } finally {
         loading.value = false;
     }

@@ -36,6 +36,12 @@ const routes = [
         meta: { requiresAuth: true },
     },
     {
+        path: '/raffle',
+        name: 'raffle',
+        component: () => import('../pages/RafflePage.vue'),
+        meta: { requiresAuth: true },
+    },
+    {
         path: '/fishers/:id',
         name: 'fisher',
         component: () => import('../pages/FisherPage.vue'),
