@@ -8,6 +8,13 @@
             >
                 <div class="zoom-panel relative flex h-full w-full max-w-5xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[88vh] sm:rounded-2xl md:flex-row">
 
+                    <!-- Hidden fish: a 10% chance on each open, if the hunt is unfinished -->
+                    <HiddenFish
+                        v-if="modalFishAnchor"
+                        :anchor="modalFishAnchor"
+                        @caught="catchModalFish"
+                    />
+
                     <!-- Owner actions, left of the close button -->
                     <div v-if="isOwner" ref="menuRoot" class="absolute right-14 top-3 z-10">
                         <button
@@ -182,11 +189,14 @@ import { deleteCatch } from '../../api/catches';
 import { fetchComments, postComment } from '../../api/comments';
 import { useScrollLock } from '../../composables/useScrollLock';
 import { useAuthStore } from '../../stores/auth';
+import { useFishStore } from '../../stores/fish';
+import HiddenFish from '../fish/HiddenFish.vue';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
 
 const { t, locale } = useI18n();
 const authStore = useAuthStore();
+const fishStore = useFishStore();
 
 const props = defineProps({
     show: { type: Boolean, default: false },
@@ -196,6 +206,40 @@ const props = defineProps({
 const emit = defineEmits(['close', 'comment-added', 'edit', 'deleted']);
 
 useScrollLock(toRef(props, 'show'));
+
+// ─── Hidden fish (10% per open) ───────────────────────────────────────────────
+
+const FISH_CHANCE = 0.10;
+
+// Spots that dodge the close button (top-right) and the comment input (bottom)
+const FISH_ANCHORS = [
+    'top-1/4 left-6 z-30',
+    'top-1/2 left-1/4 z-30',
+    'top-2/3 left-10 z-30',
+    'bottom-28 right-8 z-30',
+    'top-1/3 right-1/4 z-30',
+    'bottom-1/3 right-10 z-30',
+];
+
+const modalFishAnchor = ref(null);
+
+function maybeSpawnFish() {
+    modalFishAnchor.value = null;
+    if (fishStore.remaining > 0 && Math.random() < FISH_CHANCE) {
+        modalFishAnchor.value = FISH_ANCHORS[Math.floor(Math.random() * FISH_ANCHORS.length)];
+    }
+}
+
+function catchModalFish() {
+    modalFishAnchor.value = null;
+    fishStore.recordFind();
+}
+
+// Roll once each time a post is opened (or swapped without closing)
+watch(() => (props.show ? props.post?.id : null), (id) => {
+    if (id) maybeSpawnFish();
+    else modalFishAnchor.value = null;
+});
 
 // ─── Owner actions ────────────────────────────────────────────────────────────
 

@@ -1,9 +1,6 @@
 <template>
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div class="mb-4 flex items-center justify-between">
-            <h3 class="font-bold text-slate-900">{{ t('cabinet.activity') }}</h3>
-            <button type="button" class="text-sm text-blue-600 hover:underline">{{ t('common.viewAll') }}</button>
-        </div>
+        <h3 class="mb-4 font-bold text-slate-900">{{ t('cabinet.activity') }}</h3>
 
         <div class="space-y-4">
             <div

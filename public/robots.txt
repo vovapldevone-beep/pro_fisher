@@ -1,2 +1,11 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /cabinet
+Disallow: /admin
+Disallow: /posts
+Disallow: /fishers
+Disallow: /api
+
+Sitemap: https://profisher.buyfoli.com/sitemap.xml

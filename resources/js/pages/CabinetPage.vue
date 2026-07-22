@@ -52,28 +52,16 @@
                                     {{ t('friends.button') }}
                                 </button>
 
-                                <div class="flex w-full overflow-hidden rounded-lg border border-slate-300 sm:w-auto">
-                                    <button
-                                        type="button"
-                                        class="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap border-r border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:flex-none"
-                                        @click="showAddCatch = true"
-                                    >
-                                        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
-                                        </svg>
-                                        {{ t('cabinet.newCatch') }}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 sm:flex-none"
-                                        @click="showAddPost = true"
-                                    >
-                                        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
-                                        </svg>
-                                        {{ t('cabinet.newPost') }}
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-emerald-500 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 sm:w-auto"
+                                    @click="showAddPost = true"
+                                >
+                                    <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                                    </svg>
+                                    {{ t('common.addPublication') }}
+                                </button>
                             </div>
                         </div>
 
@@ -182,7 +170,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
                                 <div
-                                    v-for="achievement in cabinet.achievements"
+                                    v-for="achievement in achievementsList"
                                     :key="achievement.id"
                                     class="flex flex-col items-center rounded-2xl border border-slate-100 bg-white p-5 text-center shadow-sm"
                                     :class="achievement.earned ? '' : 'opacity-50'"
@@ -200,6 +188,13 @@
                                     >
                                         {{ achievement.earned ? t('cabinet.earned') : t('cabinet.notEarned') }}
                                     </p>
+                                    <router-link
+                                        v-if="achievement.id === 'fish_hunt'"
+                                        to="/raffle"
+                                        class="mt-2 text-xs font-semibold text-emerald-600 hover:underline"
+                                    >
+                                        {{ t('fish.details') }}
+                                    </router-link>
                                 </div>
                             </div>
                         </template>
@@ -223,6 +218,7 @@
             :saving="catchesStore.saving"
             @submit="handleAddCatch"
             @close="showAddCatch = false"
+            @switch="showAddCatch = false; showAddPost = true"
         />
 
         <AddPostModal
@@ -230,6 +226,7 @@
             :saving="catchesStore.saving"
             @submit="handleAddPost"
             @close="showAddPost = false"
+            @switch="showAddPost = false; showAddCatch = true"
         />
 
         <EditProfileModal
@@ -279,6 +276,7 @@ import EditCatchModal from '../components/posts/EditCatchModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
 import { useAuthStore } from '../stores/auth';
 import { useCatchesStore } from '../stores/catches';
+import { useFishStore } from '../stores/fish';
 import { useLakesStore } from '../stores/lakes';
 
 const { t, te } = useI18n();
@@ -286,6 +284,7 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const catchesStore = useCatchesStore();
+const fishStore = useFishStore();
 const lakesStore = useLakesStore();
 
 const cabinet = ref(null);
@@ -390,6 +389,19 @@ const tabs = computed(() => [
 
 const FEED_TABS = ['publications', 'posts', 'catches'];
 const isFeedTab = computed(() => FEED_TABS.includes(activeTab.value));
+
+// The fish hunt is stateful (from the store), not computed from stats like the
+// API achievements — merge it into the displayed list.
+const achievementsList = computed(() => {
+    const list = cabinet.value?.achievements ? [...cabinet.value.achievements] : [];
+    list.push({
+        id: 'fish_hunt',
+        icon: 'fish',
+        title: 'Рибалка-шукач',
+        earned: fishStore.loaded && fishStore.found >= fishStore.total,
+    });
+    return list;
+});
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
 
@@ -551,6 +563,7 @@ function onBreakpointChange(e) {
 
 onMounted(async () => {
     desktopQuery.addEventListener('change', onBreakpointChange);
+    if (!fishStore.loaded) fishStore.fetchProgress();
     await Promise.all([loadCabinet(), lakesStore.loadLakes()]);
     await loadPosts(true);
 });

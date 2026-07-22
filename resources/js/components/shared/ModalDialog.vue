@@ -6,12 +6,31 @@
             @click.self="$emit('close')"
         >
             <div class="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-                <!-- Header -->
-                <div class="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
-                    <h2 class="font-semibold text-slate-900">{{ title }}</h2>
+                <!-- Header: either a plain title, or two equal tab columns
+                     (e.g. "Новий пост | Новий улов") that switch modal kinds -->
+                <div
+                    class="flex flex-shrink-0 items-center justify-between border-b border-slate-100"
+                    :class="tabs ? 'pr-3' : 'px-6 py-4'"
+                >
+                    <div v-if="tabs" class="grid flex-1 grid-cols-2">
+                        <button
+                            v-for="tab in tabs"
+                            :key="tab.key"
+                            type="button"
+                            class="-mb-px border-b-2 px-2 py-4 text-sm font-semibold transition-colors"
+                            :class="tab.key === activeTab
+                                ? 'border-emerald-500 text-emerald-600'
+                                : 'border-transparent text-slate-400 hover:text-slate-600'"
+                            @click="tab.key !== activeTab && $emit('tab', tab.key)"
+                        >
+                            {{ tab.label }}
+                        </button>
+                    </div>
+                    <h2 v-else class="font-semibold text-slate-900">{{ title }}</h2>
+
                     <button
                         type="button"
-                        class="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
                         @click="$emit('close')"
                     >
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -58,13 +77,16 @@ const { t } = useI18n();
 
 const props = defineProps({
     show: { type: Boolean, default: false },
-    title: { type: String, required: true },
+    title: { type: String, default: '' },
     saving: { type: Boolean, default: false },
     submitLabel: { type: String, default: '' },
     savingLabel: { type: String, default: '' },
+    // Optional header tabs: [{key, label}]. When set, replaces the title.
+    tabs: { type: Array, default: null },
+    activeTab: { type: String, default: '' },
 });
 
-defineEmits(['close', 'submit']);
+defineEmits(['close', 'submit', 'tab']);
 
 useScrollLock(toRef(props, 'show'));
 </script>

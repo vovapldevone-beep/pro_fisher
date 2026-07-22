@@ -50,7 +50,15 @@
       "Bash(awk '{print \"user\"$2\": \"$1\" фото\"}')",
       "Bash(php -l database/seeders/PhotoContentSeeder.php)",
       "Bash(php -l database/migrations/2026_07_10_130000_repoint_foreign_keys_from_lakes_old.php)",
-      "Bash(exit 1)"
+      "Bash(exit 1)",
+      "Bash(composer --version)",
+      "Bash(xargs -I{} basename {})",
+      "Bash(composer require *)",
+      "Bash(php -l app/Http/Controllers/Api/GoogleAuthController.php)",
+      "Bash(php -l app/Http/Controllers/Api/FishHuntController.php)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON валідний'\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON ок'\\)\")",
+      "Bash(python3 -c \"import xml.dom.minidom,sys; xml.dom.minidom.parse\\('public/favicon.svg'\\); print\\('SVG валідний'\\)\")"
     ]
   }
 }

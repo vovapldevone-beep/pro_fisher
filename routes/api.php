@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CabinetController;
 use App\Http\Controllers\Api\CatchController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FisherController;
+use App\Http\Controllers\Api\FishHuntController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LakeController;
 use App\Http\Controllers\Api\LikeController;
@@ -34,6 +35,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cabinet/achievements', [CabinetController::class, 'achievements']);
     Route::get('/cabinet/friends', [CabinetController::class, 'friends']);
 
+    Route::get('/fish-hunt', [FishHuntController::class, 'progress']);
+    Route::post('/fish-hunt/find', [FishHuntController::class, 'find']);
+
     Route::post('/fishers/{user}/follow', [FisherController::class, 'follow']);
     Route::delete('/fishers/{user}/follow', [FisherController::class, 'unfollow']);
 
@@ -50,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/users/{user}/block', [AdminController::class, 'blockUser']);
         Route::post('/users/{user}/unblock', [AdminController::class, 'unblockUser']);
         Route::get('/catches', [AdminController::class, 'catches']);
+        // Before the {catchRecord} route so "bulk" isn't captured as a model id
+        Route::post('/catches/bulk-delete', [AdminController::class, 'deleteCatches']);
         Route::delete('/catches/{catchRecord}', [AdminController::class, 'deleteCatch']);
         Route::get('/lakes', [AdminController::class, 'lakes']);
         Route::post('/lakes', [AdminController::class, 'storeLake']);

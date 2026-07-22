@@ -115,7 +115,8 @@
     "loading": "Ładowanie...",
     "viewAll": "Zobacz wszystkie",
     "save": "Zapisz",
-    "lake": "Jezioro {name}"
+    "lake": "Jezioro {name}",
+    "addPublication": "Dodaj publikację"
   },
   "cabinet": {
     "editProfile": "Edytuj profil",
@@ -166,7 +167,8 @@
     "photographer_10":  { "title": "Fotograf",             "description": "Dodaj zdjęcie do 10 połowów" },
     "photographer_50":  { "title": "Mistrz fotografii",   "description": "Dodaj zdjęcie do 50 połowów" },
     "night_fisher":     { "title": "Nocny wędkarz",        "description": "Złów 10 ryb w nocy (22:00–06:00)" },
-    "popular":          { "title": "Popularny",            "description": "Zdobądź 10 obserwujących" }
+    "popular":          { "title": "Popularny",            "description": "Zdobądź 10 obserwujących" },
+    "fish_hunt":        { "title": "Poszukiwacz ryb",       "description": "Znajdź 10 ukrytych rybek w tablicy postów" }
   },
   "activity": {
     "catch": "Dodałeś połów {fish_name} {weight} kg na jeziorze {lake_name}",
@@ -181,6 +183,27 @@
     "mutual": "Wzajemnie",
     "emptyFollowing": "Nie obserwujesz jeszcze nikogo",
     "emptyFollowers": "Nikt Cię jeszcze nie obserwuje"
+  },
+  "fish": {
+    "counterTitle": "Znajdź 10 rybek ukrytych w tablicy!",
+    "found": "Znalezione rybki",
+    "done": "Wszystkie rybki znalezione! 🎣",
+    "tooltipIncomplete": "Znajdź wszystkie 10 ukrytych rybek w tablicy postów, aby wziąć udział w losowaniu wędki",
+    "tooltipComplete": "Bierzesz udział w losowaniu wędki",
+    "details": "Szczegóły..."
+  },
+  "raffle": {
+    "title": "Losowanie wędki",
+    "subtitle": "Znajdź wszystkie ukryte rybki i weź udział w losowaniu spinningu.",
+    "participating": "Bierzesz udział w losowaniu! 🎉",
+    "progressLabel": "Twój postęp",
+    "howTitle": "Jak wziąć udział",
+    "step1": "Przeglądaj tablicę postów i szukaj ukrytych rybek 🐟",
+    "step2": "Kliknij każdą znalezioną rybkę — licznik w nagłówku je zlicza",
+    "step3": "Znajdź wszystkie 10 — a Twoje imię trafia do losowania",
+    "prizeTitle": "Nagroda",
+    "prize": "Wędka spinningowa od Pro Fisher.",
+    "terms": "Zwycięzca zostanie wyłoniony losowo spośród wszystkich uczestników. Daty i warunki zostaną doprecyzowane."
   },
   "fisher": {
     "publications": "Publikacje",

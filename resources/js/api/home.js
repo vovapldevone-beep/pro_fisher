@@ -14,3 +14,9 @@ export async function fetchRecentCatches() {
     const { data } = await api.get('/home/recent-catches');
     return data.data;
 }
+
+// params: { page, type: 'post'|'catch', filter: 'liked'|'commented' }
+export async function fetchPosts(params = {}) {
+    const { data } = await api.get('/posts', { params });
+    return data;
+}

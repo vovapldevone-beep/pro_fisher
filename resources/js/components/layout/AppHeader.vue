@@ -5,10 +5,13 @@
     >
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <router-link to="/" class="flex min-w-0 items-center gap-2">
-                <svg class="h-8 w-8 shrink-0 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8 6 4 8 4 12c0 3 2 5 4 6 1-2 3-3 5-3s4 1 5 3c2-1 4-3 4-6 0-4-4-6-8-10zm0 14c-1.5 0-3 .5-4 1.5.5-2 2-3.5 4-3.5s3.5 1.5 4 3.5c-1-1-2.5-1.5-4-1.5z"/>
-                </svg>
-                <span class="truncate text-lg font-bold text-white sm:text-xl">FishHub</span>
+                <!-- :src (not src) so Vite serves it from public/ instead of trying to bundle it -->
+                <img
+                    :src="'/images/logo.png'"
+                    alt="ProFisher"
+                    class="h-9 w-9 shrink-0 rounded-lg object-contain sm:h-10 sm:w-10"
+                />
+                <span class="truncate text-lg font-bold text-white sm:text-xl">ProFisher</span>
             </router-link>
 
             <nav class="hidden items-center gap-8 md:flex">
@@ -24,6 +27,46 @@
             </nav>
 
             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
+                <!-- Fish-hunt counter with hover/tap popover -->
+                <div
+                    v-if="authStore.isAuthenticated && fishStore.loaded"
+                    class="relative shrink-0"
+                    @mouseenter="fishTip = true"
+                    @mouseleave="fishTip = false"
+                >
+                    <button
+                        type="button"
+                        class="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white"
+                        :class="fishStore.completed ? 'ring-1 ring-emerald-400/60' : ''"
+                        @click="fishTip = !fishTip"
+                    >
+                        <span class="text-sm leading-none">🐟</span>
+                        <span :class="fishStore.completed ? 'text-emerald-300' : ''">
+                            {{ fishStore.found }}/{{ fishStore.total }}
+                        </span>
+                    </button>
+
+                    <Transition name="fish-tip">
+                        <div
+                            v-if="fishTip"
+                            class="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl bg-white p-3 text-left shadow-xl"
+                        >
+                            <div class="flex items-start justify-between gap-3">
+                                <p class="text-xs leading-relaxed text-slate-600">
+                                    {{ fishStore.completed ? t('fish.tooltipComplete') : t('fish.tooltipIncomplete') }}
+                                </p>
+                                <router-link
+                                    to="/raffle"
+                                    class="shrink-0 text-xs font-semibold text-emerald-600 hover:underline"
+                                    @click="fishTip = false"
+                                >
+                                    {{ t('fish.details') }}
+                                </router-link>
+                            </div>
+                        </div>
+                    </Transition>
+                </div>
+
                 <button type="button" class="hidden p-2 text-white/70 hover:text-white sm:block" aria-label="Пошук">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -33,16 +76,9 @@
                 <button
                     type="button"
                     class="hidden rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 sm:inline-block"
-                    @click="openAction('add-catch')"
-                >
-                    {{ t('header.addCatch') }}
-                </button>
-                <button
-                    type="button"
-                    class="hidden rounded-lg border border-blue-400/60 px-4 py-2 text-sm font-medium text-blue-300 transition hover:bg-blue-400/10 sm:inline-block"
                     @click="openAction('add-post')"
                 >
-                    {{ t('header.addPost') }}
+                    + {{ t('common.addPublication') }}
                 </button>
 
                 <!-- Language switcher -->
@@ -95,10 +131,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
+import { useFishStore } from '../../stores/fish';
 import { setLocale } from '../../i18n';
 
 defineProps({
@@ -107,8 +144,11 @@ defineProps({
 });
 
 const authStore = useAuthStore();
+const fishStore = useFishStore();
 const router = useRouter();
 const { t, locale } = useI18n();
+
+const fishTip = ref(false);
 
 const allNavLinks = computed(() => [
     { to: '/map', label: t('nav.lakeMap') },
@@ -131,3 +171,15 @@ async function handleLogout() {
     router.push('/');
 }
 </script>
+
+<style scoped>
+.fish-tip-enter-active,
+.fish-tip-leave-active {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.fish-tip-enter-from,
+.fish-tip-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+</style>

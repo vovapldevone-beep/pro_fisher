@@ -304,4 +304,28 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'Deleted']);
     }
+
+    /**
+     * Bulk delete. Rows are fetched first so photo files get removed too —
+     * a plain mass ->delete() would leave orphaned files on disk.
+     * Likes/comments/activities cascade via their FKs.
+     */
+    public function deleteCatches(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids'   => 'required|array|min:1|max:100',
+            'ids.*' => 'integer',
+        ]);
+
+        $records = CatchRecord::whereIn('id', $validated['ids'])->get();
+
+        foreach ($records as $record) {
+            if ($record->photo && ! str_starts_with($record->photo, 'http')) {
+                Storage::disk('public')->delete($record->photo);
+            }
+            $record->delete();
+        }
+
+        return response()->json(['deleted' => $records->count()]);
+    }
 }

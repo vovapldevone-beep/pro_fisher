@@ -113,13 +113,32 @@
         <div v-if="activeTab === 'content'">
             <div v-if="loadingCatches" class="py-20 text-center text-slate-400">Завантаження...</div>
             <div v-else>
-                <p class="mb-4 text-sm text-slate-500">
-                    Всього публікацій: <span class="font-semibold text-slate-800">{{ catchesTotal }}</span>
-                </p>
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <p class="text-sm text-slate-500">
+                        Всього публікацій: <span class="font-semibold text-slate-800">{{ catchesTotal }}</span>
+                    </p>
+                    <button
+                        v-if="selectedIds.length"
+                        type="button"
+                        class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+                        :disabled="bulkDeleting"
+                        @click="handleBulkDelete"
+                    >
+                        {{ bulkDeleting ? 'Видалення...' : `Видалити вибрані (${selectedIds.length})` }}
+                    </button>
+                </div>
                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <table class="w-full text-sm">
                         <thead class="border-b border-slate-100 bg-slate-50">
                             <tr>
+                                <th class="w-10 px-4 py-3">
+                                    <input
+                                        type="checkbox"
+                                        class="h-4 w-4 cursor-pointer rounded border-slate-300 accent-red-600"
+                                        :checked="allSelected"
+                                        @change="toggleSelectAll"
+                                    />
+                                </th>
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Фото</th>
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Тип / Назва</th>
                                 <th class="px-4 py-3 text-left font-semibold text-slate-600">Автор</th>
@@ -129,7 +148,24 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="item in catches" :key="item.id" class="hover:bg-slate-50">
+                            <tr
+                                v-for="item in catches"
+                                :key="item.id"
+                                class="cursor-pointer select-none hover:bg-slate-50"
+                                :class="selectedIds.includes(item.id) ? 'bg-red-50/50' : ''"
+                                @click="toggleSelect(item.id)"
+                            >
+                                <td class="px-4 py-3">
+                                    <!-- @click.stop: the row click already toggles; without it
+                                         the event would bubble and immediately toggle back -->
+                                    <input
+                                        type="checkbox"
+                                        class="h-4 w-4 cursor-pointer rounded border-slate-300 accent-red-600"
+                                        :checked="selectedIds.includes(item.id)"
+                                        @click.stop
+                                        @change="toggleSelect(item.id)"
+                                    />
+                                </td>
                                 <td class="px-4 py-3">
                                     <img
                                         v-if="item.photo_url"
@@ -161,7 +197,7 @@
                                         type="button"
                                         class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition"
                                         :disabled="deletingId === item.id"
-                                        @click="handleDelete(item)"
+                                        @click.stop="handleDelete(item)"
                                     >
                                         {{ deletingId === item.id ? '...' : 'Видалити' }}
                                     </button>
@@ -270,6 +306,7 @@
 import { computed, h, onMounted, ref, watch } from 'vue';
 import {
     adminDeleteCatch,
+    adminDeleteCatches,
     blockUser,
     deleteLake,
     fetchAdminCatches,
@@ -358,9 +395,29 @@ const catchesLastPage = ref(1);
 const catchesTotal = ref(0);
 const deletingId = ref(null);
 
+// Selection lives within the current page: switching pages clears it, so the
+// admin never deletes rows that are no longer visible.
+const selectedIds = ref([]);
+const bulkDeleting = ref(false);
+
+const allSelected = computed(() =>
+    catches.value.length > 0 && selectedIds.value.length === catches.value.length
+);
+
+function toggleSelect(id) {
+    selectedIds.value = selectedIds.value.includes(id)
+        ? selectedIds.value.filter((s) => s !== id)
+        : [...selectedIds.value, id];
+}
+
+function toggleSelectAll() {
+    selectedIds.value = allSelected.value ? [] : catches.value.map((c) => c.id);
+}
+
 async function loadCatches(page = 1) {
     loadingCatches.value = true;
     catchesPage.value = page;
+    selectedIds.value = [];
     try {
         const res = await fetchAdminCatches(page);
         catches.value = res.data;
@@ -377,10 +434,25 @@ async function handleDelete(item) {
     try {
         await adminDeleteCatch(item.id);
         catches.value = catches.value.filter(c => c.id !== item.id);
+        selectedIds.value = selectedIds.value.filter((s) => s !== item.id);
         catchesTotal.value--;
         await loadStats();
     } finally {
         deletingId.value = null;
+    }
+}
+
+async function handleBulkDelete() {
+    const count = selectedIds.value.length;
+    if (!count || !confirm(`Видалити ${count} публікацій? Це незворотно.`)) return;
+
+    bulkDeleting.value = true;
+    try {
+        await adminDeleteCatches(selectedIds.value);
+        // Reload the page: deleting shifts pagination, a local filter would lie
+        await Promise.all([loadCatches(catchesPage.value), loadStats()]);
+    } finally {
+        bulkDeleting.value = false;
     }
 }
 
