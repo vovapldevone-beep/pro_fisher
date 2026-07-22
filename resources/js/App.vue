@@ -45,16 +45,33 @@
             class="flex shrink-0 bg-[#1a1f2e] shadow-[0_-1px_0_rgba(255,255,255,0.08)] md:hidden"
             style="padding-bottom: env(safe-area-inset-bottom)"
         >
-            <router-link
-                v-for="item in mobileNavItems"
-                :key="item.to"
-                :to="item.to"
-                class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 transition-colors duration-150"
-                :class="isMobileActive(item) ? 'text-emerald-400' : 'text-white/50 hover:text-white/80'"
-            >
-                <component :is="item.icon" class="h-5 w-5 shrink-0" />
-                <span class="text-[10px] font-medium leading-tight">{{ item.shortLabel }}</span>
-            </router-link>
+            <template v-for="item in mobileNavItems" :key="item.to">
+                <router-link
+                    :to="item.to"
+                    class="flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 transition-colors duration-150"
+                    :class="isMobileActive(item) ? 'text-emerald-400' : 'text-white/50 hover:text-white/80'"
+                >
+                    <component :is="item.icon" class="h-5 w-5 shrink-0" />
+                    <span class="text-[10px] font-medium leading-tight">{{ item.shortLabel }}</span>
+                </router-link>
+
+                <!-- Prominent "add publication" FAB, raised above the bar right
+                     after the map tab. The thick menu-coloured border makes it
+                     read as cut into the bar as it protrudes upward. -->
+                <div v-if="item.to === '/map'" class="flex flex-1 items-center justify-center">
+                    <button
+                        type="button"
+                        :aria-label="t('common.addPublication')"
+                        class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#1a1f2e] text-white/60 shadow-lg transition hover:text-white/90 active:scale-95"
+                        style="background-color: oklch(0.24 0.03 269.9)"
+                        @click="openAddPublication"
+                    >
+                        <svg class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                        </svg>
+                    </button>
+                </div>
+            </template>
         </nav>
 
         <!-- Full-screen fireworks when the last hidden fish is caught -->
@@ -67,7 +84,7 @@
 
 <script setup>
 import { computed, h, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import FireworksOverlay from './components/fish/FireworksOverlay.vue';
 import RafflePromoModal from './components/fish/RafflePromoModal.vue';
@@ -80,7 +97,14 @@ import { useFishStore } from './stores/fish';
 const authStore = useAuthStore();
 const fishStore = useFishStore();
 const route = useRoute();
+const router = useRouter();
 const { t } = useI18n();
+
+// FAB: opens the tabbed add-publication modal. CabinetPage watches
+// ?action=add-post and opens AddPostModal (with the Пост|Улов tabs).
+function openAddPublication() {
+    router.push({ path: '/cabinet', query: { action: 'add-post' } });
+}
 
 const mainEl = ref(null);
 const { hidden: headerHidden, show: showHeader } = useHideOnScroll(mainEl);
