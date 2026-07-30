@@ -38,6 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/fish-hunt', [FishHuntController::class, 'progress']);
     Route::post('/fish-hunt/find', [FishHuntController::class, 'find']);
 
+    // Finding people by name or @handle — auth-only, so handles are not scrapeable
+    Route::get('/users/search', [FisherController::class, 'search']);
+
     Route::post('/fishers/{user}/follow', [FisherController::class, 'follow']);
     Route::delete('/fishers/{user}/follow', [FisherController::class, 'unfollow']);
 

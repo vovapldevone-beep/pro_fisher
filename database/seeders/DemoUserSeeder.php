@@ -37,6 +37,7 @@ class DemoUserSeeder extends Seeder
                 ['email' => $email],
                 [
                     'name' => $name,
+                    'username' => User::generateUsername($name),
                     'email_verified_at' => now(),
                     'password' => Hash::make('password'),
                 ]

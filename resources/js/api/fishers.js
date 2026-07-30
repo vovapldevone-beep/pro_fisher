@@ -10,6 +10,11 @@ export async function fetchFisherPosts(id, params = {}) {
     return data;
 }
 
+export async function searchUsers(params = {}) {
+    const { data } = await api.get('/users/search', { params });
+    return data;
+}
+
 export async function followFisher(id) {
     const { data } = await api.post(`/fishers/${id}/follow`);
     return data;

@@ -37,6 +37,7 @@ class FisherController extends Controller
             'profile' => [
                 'id' => $user->id,
                 'name' => $user->name,
+                'username' => $user->username,
                 'bio' => $user->bio,
                 'avatar_url' => $user->avatar_url,
                 'badge' => $user->badge,
@@ -52,6 +53,65 @@ class FisherController extends Controller
             ],
             'achievements' => $this->buildAchievements($catchesCount, $lakesVisited, $photosCount, $biggestCatch),
             'is_following' => $isFollowing,
+        ]);
+    }
+
+    /**
+     * Finds people by display name or @handle, a page at a time.
+     *
+     * Paginated because the result set is unbounded — a two-letter query matches
+     * a large share of the table, and the friends modal scrolls the rest in.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        // A pasted handle usually carries its "@" along
+        $term = ltrim(trim((string) $request->query('q', '')), '@');
+
+        if (mb_strlen($term) < 2) {
+            return response()->json([
+                'data' => [],
+                'meta' => ['current_page' => 1, 'last_page' => 1, 'total' => 0],
+            ]);
+        }
+
+        $me = $request->user();
+        // The wildcards are ours; the ones the user typed must stay literal
+        $like = '%'.addcslashes($term, '%_\\').'%';
+
+        $page = User::query()
+            ->where('is_blocked', false)
+            ->where('id', '!=', $me->id)
+            ->where(fn ($query) => $query
+                ->where('name', 'like', $like)
+                ->orWhere('username', 'like', $like))
+            // Exact handle first, then things that start with the term
+            ->orderByRaw(
+                'CASE WHEN username = ? THEN 0 WHEN username LIKE ? THEN 1 WHEN name LIKE ? THEN 2 ELSE 3 END',
+                [$term, $term.'%', $term.'%'],
+            )
+            ->orderBy('name')
+            ->orderBy('id')
+            ->paginate(15, ['id', 'name', 'username', 'avatar_url', 'badge']);
+
+        $followingIds = Follow::where('follower_id', $me->id)
+            ->whereIn('following_id', $page->pluck('id'))
+            ->pluck('following_id')
+            ->all();
+
+        return response()->json([
+            'data' => $page->getCollection()->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->username,
+                'avatar_url' => $u->avatar_url,
+                'badge' => $u->badge,
+                'is_following' => in_array($u->id, $followingIds, true),
+            ])->values(),
+            'meta' => [
+                'current_page' => $page->currentPage(),
+                'last_page' => $page->lastPage(),
+                'total' => $page->total(),
+            ],
         ]);
     }
 
@@ -104,7 +164,7 @@ class FisherController extends Controller
             ->with(['lake:id,name,slug,latitude,longitude'])
             ->withCount(['postLikes', 'catchComments'])
             ->when($userId, fn ($q) => $q->with([
-                'postLikes'    => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
+                'postLikes' => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
                 'userComments' => fn ($q) => $q->where('user_id', $userId)->select('id', 'catch_id'),
             ]))
             ->latest('created_at');
@@ -119,8 +179,8 @@ class FisherController extends Controller
             'data' => CatchResource::collection($paginated),
             'meta' => [
                 'current_page' => $paginated->currentPage(),
-                'last_page'    => $paginated->lastPage(),
-                'total'        => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
+                'total' => $paginated->total(),
             ],
         ]);
     }

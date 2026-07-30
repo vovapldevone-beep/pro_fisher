@@ -309,9 +309,13 @@ const sentinel = ref(null);
 
 const defaultAvatar = 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200';
 
+// The stored, unique handle. Accounts created before it existed fall back to the
+// old derived form until the backfill migration has run.
 const handle = computed(() => {
-    if (!cabinet.value?.profile?.name) return '';
-    return cabinet.value.profile.name.toLowerCase().replace(/\s+/g, '');
+    const profile = cabinet.value?.profile;
+    if (!profile?.name) return '';
+
+    return profile.username || profile.name.toLowerCase().replace(/\s+/g, '');
 });
 
 // ─── Icons ───────────────────────────────────────────────────────────────────

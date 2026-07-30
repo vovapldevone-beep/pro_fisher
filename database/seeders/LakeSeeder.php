@@ -151,6 +151,7 @@ class LakeSeeder extends Seeder
                 ['email' => 'rybak@example.com'],
                 [
                     'name' => 'IvanFishing',
+                    'username' => 'ivanfishing',
                     'password' => 'password',
                     'location' => 'Польща, Варшава',
                     'bio' => 'Люблю риболовлю та подорожі на природу!',
@@ -160,7 +161,7 @@ class LakeSeeder extends Seeder
             ),
             User::firstOrCreate(
                 ['email' => 'piotr@example.com'],
-                ['name' => 'PiotrWędka', 'password' => 'password']
+                ['name' => 'PiotrWędka', 'username' => 'piotrwędka', 'password' => 'password']
             ),
         ];
 

@@ -58,14 +58,18 @@ class GoogleAuthController extends Controller
         // are verified, so this is safe against hijacking.
         if ($user = User::where('email', $googleUser->getEmail())->first()) {
             $user->google_id = $googleUser->getId();
+            $user->username ??= User::generateUsername($user->name);
             $user->save();
 
             return $user;
         }
 
         // Brand-new user
+        $name = $googleUser->getName() ?: $googleUser->getNickname() ?: 'Рибалка';
+
         return User::create([
-            'name' => $googleUser->getName() ?: $googleUser->getNickname() ?: 'Рибалка',
+            'name' => $name,
+            'username' => User::generateUsername($name),
             'email' => $googleUser->getEmail(),
             'google_id' => $googleUser->getId(),
             'avatar_url' => $googleUser->getAvatar(), // http URL, stored as-is

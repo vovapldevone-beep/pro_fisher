@@ -144,7 +144,12 @@ Route guards in `router/index.js` redirect unauthenticated users to `/login` (wi
 
 **`components/shared/LakeSelect.vue`**: a "place" combobox (two `v-model`s: `modelValue`=lake_id, `location`=free text) used in Add/Edit catch modals. Dropdown teleported to body (so the modal's `overflow-y-auto` can't clip it), repositioned on scroll/resize. Options: **"Використовувати GPS"** (always on top), the lakes list, and — as you type — **Nominatim place suggestions** (debounced 350ms, min 3 chars, aborts stale requests) plus a fallback "use as my own place". Keyboard-navigable over the combined list.
 
-**`components/cabinet/FriendsModal.vue`**: `CabinetController::friends()` → `GET /api/cabinet/friends` returns `following` / `followers` (id, name, avatar, badge; followers include `is_following` for a "mutual" tag). Tabs, tap a person → `/fishers/:id`. Opened from a "Мої друзі" button on CabinetPage.
+**`components/cabinet/FriendsModal.vue`**: three lists in one modal, all paginated 15/page with `useInfiniteScroll` (the modal scrolls in its own box, so it passes `root: listEl`).
+- Tabs: `CabinetController::friends()` → `GET /api/cabinet/friends?tab=following|followers&page=` → `{data, meta, counts:{following,followers}}`. `counts` rides on every page so the tab labels stay right while the list is still scrolling in. Rows are ordered by `follows.id` DESC (newest connection first — a stable key for pagination).
+- Search box **above** the tabs: `FisherController::search()` → `GET /api/users/search?q=&page=` matches `name` OR `username`, strips a leading `@`, needs ≥2 chars (client debounces 350 ms), excludes self and blocked users, orders exact-handle → prefix → the rest. Auth-only, so handles are not scrapeable. A non-empty query hides the tabs and shows global results; clearing it restores them. In-flight responses are dropped if the query or tab moved on.
+- Tap a person → `/fishers/:id`. Opened from a "Мої друзі" button on CabinetPage.
+
+**User handle (`users.username`)**: a real unique column, not the old value derived in the browser. `User::generateUsername($name)` lower-cases the name and strips everything that is not a letter or digit, so "Андрій Мороз" → `андріймороз` (Cyrillic is kept, not transliterated — the handle should still read as the name). On collision it appends 1–3 random digits, the width growing every 10 failed attempts. Called from `AuthController::register`, `GoogleAuthController::resolveUser` (new users, and any account linked by email that predates the column), `DemoUserSeeder` and `UserFactory`. The migration backfills existing rows oldest-first, so the suffix-free handle goes to whoever registered earliest. `CabinetPage`/`FisherPage` render `profile.username` and only fall back to the derived form if it is null.
 
 ### Fish hunt (easter egg)
 
@@ -161,7 +166,7 @@ Route guards in `router/index.js` redirect unauthenticated users to `/login` (wi
 MySQL in production, database `pro_fisher`. Migrations are in `database/migrations/`. `LakeSeeder` seeds 12 Polish lakes with photos (Unsplash URLs), catches, reviews, and one active permit for the demo user (`rybak@example.com` / `password`).
 
 Key tables:
-- `users` — plus `location`, `bio`, `avatar_url`, `badge`, `is_admin`, `is_blocked`, `google_id` (nullable unique), `password` (nullable — OAuth users)
+- `users` — plus `username` (nullable unique, the public @handle), `location`, `bio`, `avatar_url`, `badge`, `is_admin`, `is_blocked`, `google_id` (nullable unique), `password` (nullable — OAuth users)
 - `catches` — `user_id`, `lake_id` (nullable), `type` (catch|post), `fish_name` (nullable), `weight`, `photo`, `caught_at` (nullable), `notes`, `location` (nullable)
 - `post_likes` — `user_id`, `catch_id` (unique together)
 - `catch_comments` — `catch_id`, `user_id`, `body`

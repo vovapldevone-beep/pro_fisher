@@ -58,7 +58,28 @@
       "Bash(php -l app/Http/Controllers/Api/FishHuntController.php)",
       "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON валідний'\\)\")",
       "Bash(python3 -c \"import json; json.load\\(open\\('resources/js/locales/uk.json'\\)\\); json.load\\(open\\('resources/js/locales/pl.json'\\)\\); print\\('JSON ок'\\)\")",
-      "Bash(python3 -c \"import xml.dom.minidom,sys; xml.dom.minidom.parse\\('public/favicon.svg'\\); print\\('SVG валідний'\\)\")"
+      "Bash(python3 -c \"import xml.dom.minidom,sys; xml.dom.minidom.parse\\('public/favicon.svg'\\); print\\('SVG валідний'\\)\")",
+      "Bash(composer run *)",
+      "Bash(npm -v)",
+      "Bash(composer install *)",
+      "Bash(timeout 20 composer run dev)",
+      "Bash(timeout 25 composer run dev)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(git ls-tree *)",
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('resources/js/locales/uk.json'\\)\\);print\\(json.dumps\\(d.get\\('friends'\\),ensure_ascii=False,indent=2\\)\\);print\\(json.dumps\\(d.get\\('common'\\),ensure_ascii=False,indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json;d=json.load\\(open\\('resources/js/locales/pl.json'\\)\\);print\\(json.dumps\\(d.get\\('friends'\\),ensure_ascii=False,indent=2\\)\\)\")",
+      "Bash(./vendor/bin/pint --dirty)",
+      "Bash(grep -n \"FriendsModal\\\\|^- \\\\`users\\\\`\" CLAUDE.md)",
+      "Bash(awk -F: '{s+=$2} END {print s}')",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(cd /home/qwas/projects/pro_fisher; echo \"=== CabinetPage Icons section ===\"; sed -n '/─── Icons/,/^\\\\/\\\\/ ───/p' resources/js/pages/CabinetPage.vue | head -30; echo; echo \"=== heart icon duplicates ===\"; grep -rn \"M4.318 6.318\\\\|21.752 15.002\\\\|4.318\" resources/js --include=\"*.vue\" | head; echo; echo \"=== PostCard like/comment icons ===\"; grep -n \"<svg\" -A 3 resources/js/components/posts/PostCard.vue | head -30)",
+      "Bash(node -e \"try{require.resolve\\('sharp'\\);console.log\\('sharp yes'\\)}catch{console.log\\('sharp no'\\)}\")",
+      "Bash(python3 -c \"import cairosvg; print\\('cairosvg yes'\\)\")",
+      "Bash(node bbox.js)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --virtual-time-budget=2000 --dump-dom bbox.html)"
+    ],
+    "additionalDirectories": [
+      "/home/qwas/projects/pro_fisher/resources/js/pages"
     ]
   }
 }
