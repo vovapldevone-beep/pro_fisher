@@ -143,8 +143,8 @@
                                 <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
                                 </svg>
-                                <a :href="`https://${lake.admin_website}`" target="_blank" class="text-emerald-700 hover:underline">
-                                    {{ lake.admin_website }}
+                                <a :href="websiteUrl" target="_blank" rel="noopener noreferrer" class="break-all text-emerald-700 hover:underline">
+                                    {{ websiteLabel }}
                                 </a>
                             </li>
                         </ul>
@@ -357,6 +357,22 @@ useHead({
 const activeTab = ref('overview');
 const activePhotoIndex = ref(0);
 const ownReviewsCount = computed(() => lake.value?.reviews?.length ?? 0);
+
+// `admin_website` is stored both ways: hand-entered lakes hold a bare host
+// ("www.biale.pl"), imported ones a full URL. Prepending the scheme blindly
+// turned the second kind into "https://https://…", so add it only if missing.
+const websiteUrl = computed(() => {
+    const site = lake.value?.admin_website?.trim();
+    if (!site) return '';
+
+    return /^https?:\/\//i.test(site) ? site : `https://${site}`;
+});
+
+// Shown without the scheme and the trailing slash — the host is what a reader
+// recognises, and a full URL wraps badly in the narrow contacts card.
+const websiteLabel = computed(() =>
+    (lake.value?.admin_website ?? '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+);
 // const selectedPermit = ref(1); // використовувався віджетом купівлі дозволу
 
 const tabs = computed(() => [

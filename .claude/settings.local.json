@@ -119,7 +119,10 @@
       "Bash(curl -s \"http://127.0.0.1:8899/lakes/piorunow\")",
       "Bash(curl -s \"http://127.0.0.1:8899/lakes/biale\")",
       "Bash(sed 's/^/  aggregateRating блоків: /')",
-      "Bash(curl -s \"http://127.0.0.1:8899/lakes/lowisko-rusiec\")"
+      "Bash(curl -s \"http://127.0.0.1:8899/lakes/lowisko-rusiec\")",
+      "Bash(grep -c \"https://\\\\${\")",
+      "Bash(grep -c 'https://\\\\${' resources/js/pages/LakeDetailPage.vue)",
+      "Bash(grep -n 'https://\\\\${\\\\|websiteUrl\\\\|websiteLabel' resources/js/pages/LakeDetailPage.vue)"
     ],
     "additionalDirectories": [
       "/home/qwas/projects/pro_fisher/resources/js/pages",
