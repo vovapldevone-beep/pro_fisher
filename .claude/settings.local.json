@@ -76,10 +76,33 @@
       "Bash(node -e \"try{require.resolve\\('sharp'\\);console.log\\('sharp yes'\\)}catch{console.log\\('sharp no'\\)}\")",
       "Bash(python3 -c \"import cairosvg; print\\('cairosvg yes'\\)\")",
       "Bash(node bbox.js)",
-      "Bash(google-chrome --headless --disable-gpu --no-sandbox --virtual-time-budget=2000 --dump-dom bbox.html)"
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --virtual-time-budget=2000 --dump-dom bbox.html)",
+      "Bash(echo \"build exit=$?\")",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=890,640 --screenshot=cards.png cards.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=1130,940 --screenshot=b2.png b2.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=1130,700 --screenshot=b2.png b2.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=810,560 --screenshot=f2.png f2.html)",
+      "Bash(python3 -)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=800,720 --screenshot=ctx.png ctx.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=1170,700 --screenshot=b3.png b3.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=990,460 --screenshot=f3.png f3.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=240,130 --screenshot=d.png d.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=460,120 --screenshot=d.png d.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=470,220 --screenshot=d.png d.html)",
+      "Bash(node /tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/sweep.js)",
+      "Bash(node /tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/sweep.js --apply)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=820,600 --screenshot=ctx2.png ctx2.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=670,250 --screenshot=s4.png s4.html)",
+      "Bash(awk -F: '$2>0{s+=$2} END {print \"  \"s}')",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=560,420 --screenshot=final4.png final4.html)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=740,560 --screenshot=ach.png ach.html)",
+      "Bash(grep -n \"lake\" app/Http/Controllers/Api/AdminController.php | head -40; echo \"---VALIDATION---\"; sed -n '/function storeLake/,/^    }/p' app/Http/Controllers/Api/AdminController.php)",
+      "Bash(sed -n '/function validateLake/,/^    }/p' app/Http/Controllers/Api/AdminController.php)",
+      "Bash(sed -n '/function uniqueSlug/,/^    }/p' app/Http/Controllers/Api/AdminController.php)"
     ],
     "additionalDirectories": [
-      "/home/qwas/projects/pro_fisher/resources/js/pages"
+      "/home/qwas/projects/pro_fisher/resources/js/pages",
+      "/home/qwas/projects/pro_fisher/app/Http/Controllers/Api"
     ]
   }
 }

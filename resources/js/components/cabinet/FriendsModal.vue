@@ -17,9 +17,7 @@
                             :aria-label="t('modal.cancel')"
                             @click="$emit('close')"
                         >
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <AppIcon name="close" class="h-4 w-4" />
                         </button>
                     </div>
 
@@ -46,9 +44,7 @@
                                 :aria-label="t('modal.cancel')"
                                 @click="query = ''"
                             >
-                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <AppIcon name="close" class="h-3.5 w-3.5" />
                             </button>
                         </div>
                     </div>
@@ -125,9 +121,7 @@
                                 {{ t('friends.followed') }}
                             </span>
 
-                            <svg class="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
-                            </svg>
+                            <AppIcon name="chevron-right" class="h-4 w-4 shrink-0 text-slate-300" />
                         </router-link>
 
                         <!-- Infinite-scroll sentinel: pulls the next page into view -->
@@ -149,6 +143,7 @@ import { fetchFriends } from '../../api/cabinet';
 import { followFisher, searchUsers } from '../../api/fishers';
 import { useInfiniteScroll } from '../../composables/useInfiniteScroll';
 import { useScrollLock } from '../../composables/useScrollLock';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

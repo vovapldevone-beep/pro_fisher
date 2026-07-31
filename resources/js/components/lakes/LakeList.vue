@@ -4,14 +4,7 @@
             <h2 class="text-lg font-bold text-slate-900">{{ t('map.allLakes') }}</h2>
             <p class="mt-0.5 text-sm text-slate-500">{{ t('map.lakesCount', { count: filteredLakes.length }) }}</p>
             <div class="relative mt-3">
-                <svg
-                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <AppIcon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                     v-model="search"
                     type="text"
@@ -45,6 +38,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import LakeListItem from './LakeListItem.vue';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

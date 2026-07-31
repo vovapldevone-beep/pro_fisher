@@ -7,9 +7,7 @@
                 class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                 @click="$emit('close')"
             >
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <AppIcon name="close" class="h-5 w-5" />
             </button>
         </div>
 
@@ -37,9 +35,7 @@
                     rel="noopener"
                     class="group inline-flex items-start gap-1.5 text-sm text-slate-500 transition hover:text-blue-600"
                 >
-                    <svg class="mt-0.5 h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
+                    <AppIcon name="map-pin" class="mt-0.5 h-4 w-4 shrink-0" fill="currentColor" />
                     <span class="group-hover:underline">{{ lake.address }}</span>
                 </a>
                 <p v-if="lake.price" class="text-lg font-semibold text-slate-900">
@@ -73,9 +69,7 @@
                         class="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                         @click="showLoginModal = false"
                     >
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <AppIcon name="close" class="h-5 w-5" />
                     </button>
                 </div>
 
@@ -131,6 +125,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
 import RecentCatches from './RecentCatches.vue';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

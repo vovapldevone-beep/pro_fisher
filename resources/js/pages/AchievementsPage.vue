@@ -8,9 +8,7 @@
                     class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm hover:bg-slate-100"
                     @click="$router.back()"
                 >
-                    <svg class="h-5 w-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <AppIcon name="chevron-left" class="h-5 w-5 text-slate-600" />
                 </button>
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900">{{ t('cabinet.achievements') }}</h1>
@@ -69,6 +67,7 @@ import { useI18n } from 'vue-i18n';
 import { fetchAchievements } from '../api/cabinet';
 import AchievementCard from '../components/cabinet/AchievementCard.vue';
 import { useFishStore } from '../stores/fish';
+import AppIcon from '../components/shared/AppIcon.vue';
 
 const { t } = useI18n();
 const fishStore = useFishStore();

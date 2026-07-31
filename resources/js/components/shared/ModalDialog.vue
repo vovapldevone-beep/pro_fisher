@@ -33,9 +33,7 @@
                         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100"
                         @click="$emit('close')"
                     >
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                        <AppIcon name="close" class="h-4 w-4" />
                     </button>
                 </div>
 
@@ -72,6 +70,7 @@
 import { toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useScrollLock } from '../../composables/useScrollLock';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

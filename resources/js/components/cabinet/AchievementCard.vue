@@ -6,19 +6,22 @@
         <div class="flex items-start gap-4">
             <!-- Icon -->
             <div
-                class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full text-2xl"
-                :class="achievement.earned ? 'bg-emerald-50' : 'bg-slate-100 grayscale'"
+                class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
+                :class="achievement.earned ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'"
             >
-                {{ iconEmoji(achievement.icon) }}
+                <AppIcon :name="achievement.icon" class="h-7 w-7" />
             </div>
 
             <!-- Text -->
             <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
+                <!-- flex-wrap so a long title pushes the badge onto its own line
+                     instead of squeezing it; without it the badge shrinks below its
+                     own text and breaks between the tick and the word. -->
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <p class="font-semibold text-slate-900">{{ achievementTitle }}</p>
                     <span
                         v-if="achievement.earned"
-                        class="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
+                        class="shrink-0 whitespace-nowrap rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700"
                     >
                         {{ t('cabinet.earnedBadge') }}
                     </span>
@@ -55,6 +58,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t, te } = useI18n();
 
@@ -64,21 +68,6 @@ const props = defineProps({
         required: true,
     },
 });
-
-const icons = {
-    star: '⭐',
-    fish: '🐟',
-    lake: '🏞️',
-    camera: '📷',
-    moon: '🌙',
-    trophy: '🏆',
-    map: '🗺️',
-    people: '👥',
-};
-
-function iconEmoji(icon) {
-    return icons[icon] || '🏅';
-}
 
 const achievementTitle = computed(() => {
     const key = `achievements.${props.achievement.id}.title`;

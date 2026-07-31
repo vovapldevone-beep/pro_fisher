@@ -12,10 +12,10 @@
                 class="flex flex-col items-center text-center"
             >
                 <div
-                    class="flex h-16 w-16 items-center justify-center rounded-full text-2xl"
-                    :class="achievement.earned ? 'bg-emerald-50' : 'bg-slate-100 grayscale opacity-50'"
+                    class="flex h-16 w-16 items-center justify-center rounded-full"
+                    :class="achievement.earned ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400 opacity-50'"
                 >
-                    {{ iconEmoji(achievement.icon) }}
+                    <AppIcon :name="achievement.icon" class="h-8 w-8" />
                 </div>
                 <p class="mt-2 text-xs font-medium text-slate-700">{{ achievementTitle(achievement) }}</p>
                 <p
@@ -31,6 +31,7 @@
 
 <script setup>
 import { useI18n } from 'vue-i18n';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t, te } = useI18n();
 
@@ -44,11 +45,5 @@ defineProps({
 function achievementTitle(achievement) {
     const key = `achievements.${achievement.id}.title`;
     return te(key) ? t(key) : achievement.title;
-}
-
-const icons = { star: '⭐', fish: '🐟', lake: '🏞️', camera: '📷', moon: '🌙' };
-
-function iconEmoji(icon) {
-    return icons[icon] || '🏅';
 }
 </script>

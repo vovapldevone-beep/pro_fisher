@@ -29,9 +29,7 @@
                 :aria-label="t('modal.cancel')"
                 @click.stop="clear"
             >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <AppIcon name="close" class="h-4 w-4" />
             </button>
 
             <button
@@ -42,18 +40,10 @@
                 :aria-label="t('modal.mapOpen')"
                 @click.stop="$emit('toggle-map')"
             >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                </svg>
+                <AppIcon name="map" class="h-4 w-4" />
             </button>
 
-            <svg
-                class="h-4 w-4 shrink-0 text-slate-400 transition-transform"
-                :class="isOpen ? 'rotate-180' : ''"
-                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-            >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-            </svg>
+            <AppIcon name="chevron-down" class="h-4 w-4 shrink-0 text-slate-400 transition-transform" :class="isOpen ? 'rotate-180' : ''" />
         </div>
 
         <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
@@ -79,9 +69,7 @@
                             <circle cx="12" cy="12" r="8"/>
                             <path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/>
                         </svg>
-                        <svg v-else class="h-3.5 w-3.5 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
-                        </svg>
+                        <AppIcon name="spinner" class="h-3.5 w-3.5 animate-spin" />
                     </span>
                     <span class="min-w-0">
                         <span class="block font-medium text-slate-800">{{ t('catch.useGps') }}</span>
@@ -109,13 +97,7 @@
                         @mouseenter="highlighted = index"
                         @click="choose(option)"
                     >
-                        <svg
-                            v-if="option.type === 'place'"
-                            class="h-3.5 w-3.5 shrink-0 text-blue-500"
-                            fill="currentColor" viewBox="0 0 24 24"
-                        >
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                        </svg>
+                        <AppIcon name="map-pin" v-if="option.type === 'place'" class="h-3.5 w-3.5 shrink-0 text-blue-500" fill="currentColor" />
 
                         <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
                         <span v-if="option.hint" class="shrink-0 truncate text-xs text-slate-400">{{ option.hint }}</span>
@@ -124,9 +106,7 @@
 
                 <!-- Geocoder is still working on the current query -->
                 <li v-if="suggestLoading" class="flex items-center gap-2 px-3 py-2.5 text-sm text-slate-400">
-                    <svg class="h-3.5 w-3.5 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
-                    </svg>
+                    <AppIcon name="spinner" class="h-3.5 w-3.5 animate-spin" />
                     {{ t('catch.searchingPlaces') }}
                 </li>
 
@@ -136,9 +116,7 @@
                     class="flex cursor-pointer items-center gap-2 px-3 py-2.5 text-sm transition hover:bg-slate-50"
                     @click="selectCustom"
                 >
-                    <svg class="h-3.5 w-3.5 shrink-0 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
+                    <AppIcon name="map-pin" class="h-3.5 w-3.5 shrink-0 text-blue-500" fill="currentColor" />
                     <span class="min-w-0 truncate">
                         «{{ trimmedQuery }}» — <span class="text-slate-400">{{ t('catch.useAsOwnPlace') }}</span>
                     </span>
@@ -155,6 +133,7 @@
 <script setup>
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

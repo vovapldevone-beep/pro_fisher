@@ -7,15 +7,11 @@
                     to="/map"
                     class="flex shrink-0 items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-700"
                 >
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <AppIcon name="chevron-left" class="h-4 w-4" />
                     Назад до карти
                 </router-link>
                 <div class="relative mx-auto hidden max-w-md flex-1 sm:block">
-                    <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <AppIcon name="search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
                         placeholder="Пошук озер..."
@@ -63,18 +59,14 @@
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900">Озеро {{ lake.name }}</h1>
                     <div class="mt-2 flex items-center gap-2">
-                        <svg class="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                        <AppIcon name="star" class="h-5 w-5 text-emerald-500" fill="currentColor" />
                         <span class="font-semibold text-slate-900">{{ lake.rating }}</span>
                         <span class="text-slate-500">({{ lake.reviews_count }} відгуків)</span>
                     </div>
 
                     <ul class="mt-6 space-y-3 text-sm text-slate-600">
                         <li v-if="lake.region" class="flex items-start gap-3">
-                            <svg class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            </svg>
+                            <AppIcon name="map-pin" class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                             {{ lake.region }}, Польща
                         </li>
                         <li v-if="lake.permit_required" class="flex items-start gap-3">
@@ -88,15 +80,11 @@
                             {{ lake.fish_species }}
                         </li>
                         <li v-if="lake.price" class="flex items-start gap-3">
-                            <svg class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                            </svg>
+                            <AppIcon name="card" class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                             {{ lake.price }} zł / день
                         </li>
                         <li v-if="lake.area_ha" class="flex items-start gap-3">
-                            <svg class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                            </svg>
+                            <AppIcon name="expand" class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                             Площа: {{ lake.area_ha }} га
                         </li>
                         <li v-if="lake.max_depth_m" class="flex items-start gap-3">
@@ -143,9 +131,7 @@
                                 {{ lake.admin_name }}
                             </li>
                             <li v-if="lake.admin_phone" class="flex items-center gap-3">
-                                <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
+                                <AppIcon name="phone" class="h-4 w-4 text-slate-400" />
                                 {{ lake.admin_phone }}
                             </li>
                             <li v-if="lake.admin_website" class="flex items-center gap-3">
@@ -253,16 +239,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-1 flex gap-0.5">
-                                    <svg
-                                        v-for="star in 5"
-                                        :key="star"
-                                        class="h-4 w-4"
-                                        :class="star <= review.rating ? 'text-amber-400' : 'text-slate-200'"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
+                                    <AppIcon name="star" v-for="star in 5" :key="star" class="h-4 w-4" :class="star <= review.rating ? 'text-amber-400' : 'text-slate-200'" fill="currentColor" />
                                 </div>
                                 <p class="mt-2 text-sm text-slate-600">{{ review.comment }}</p>
                             </div>
@@ -306,16 +283,7 @@
                                 </div>
                             </div>
                             <div class="mt-2 flex gap-0.5">
-                                <svg
-                                    v-for="star in 5"
-                                    :key="star"
-                                    class="h-4 w-4"
-                                    :class="star <= review.rating ? 'text-amber-400' : 'text-slate-200'"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
+                                <AppIcon name="star" v-for="star in 5" :key="star" class="h-4 w-4" :class="star <= review.rating ? 'text-amber-400' : 'text-slate-200'" fill="currentColor" />
                             </div>
                             <p class="mt-2 text-slate-600">{{ review.comment }}</p>
                         </div>
@@ -336,9 +304,7 @@
                         target="_blank"
                         class="mt-4 inline-flex items-center gap-2 text-emerald-700 hover:underline"
                     >
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
+                        <AppIcon name="map-pin" class="h-4 w-4" />
                         Відкрити в Google Maps
                     </a>
                 </div>
@@ -352,6 +318,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHead } from '@unhead/vue';
 import { fetchLake } from '../api/lakes';
+import AppIcon from '../components/shared/AppIcon.vue';
 
 const route = useRoute();
 const router = useRouter();

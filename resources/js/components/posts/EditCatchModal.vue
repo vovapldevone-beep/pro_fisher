@@ -16,9 +16,7 @@
             >
                 <img v-if="photoPreview" :src="photoPreview" class="h-full w-full object-cover" />
                 <div v-else class="flex flex-col items-center gap-2 text-slate-400">
-                    <svg class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5M21 15.75V18a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-2.25M3 9.75h18"/>
-                    </svg>
+                    <AppIcon name="image" class="h-10 w-10" />
                     <span class="text-sm">{{ t('modal.photoHint') }}</span>
                 </div>
             </div>
@@ -109,6 +107,7 @@ import { useI18n } from 'vue-i18n';
 import { updateCatch } from '../../api/catches';
 import LakeSelect from '../shared/LakeSelect.vue';
 import ModalDialog from '../shared/ModalDialog.vue';
+import AppIcon from '../shared/AppIcon.vue';
 
 const { t } = useI18n();
 

@@ -60,7 +60,7 @@
                         <div class="hidden shrink-0 md:flex md:items-start md:gap-6 lg:gap-8">
                             <div v-for="stat in statItems" :key="stat.key" class="flex flex-col items-center text-center">
                                 <div class="mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
-                                    <component :is="stat.icon" class="h-4 w-4" />
+                                    <AppIcon :name="stat.icon" class="h-4 w-4" />
                                 </div>
                                 <p class="text-base font-bold text-slate-900">{{ stat.value }}</p>
                                 <p v-if="stat.sub" class="text-[11px] text-slate-400">{{ stat.sub }}</p>
@@ -73,7 +73,7 @@
                     <div class="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-4 md:hidden">
                         <div v-for="stat in statItems" :key="stat.key" class="flex flex-col items-center text-center">
                             <div class="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600">
-                                <component :is="stat.icon" class="h-3.5 w-3.5" />
+                                <AppIcon :name="stat.icon" class="h-3.5 w-3.5" />
                             </div>
                             <p class="text-sm font-bold text-slate-900">{{ stat.value }}</p>
                             <p v-if="stat.sub" class="text-[10px] text-slate-400">{{ stat.sub }}</p>
@@ -95,7 +95,7 @@
                                 : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'"
                             @click="switchTab(tab.key)"
                         >
-                            <component :is="tab.icon" class="h-4 w-4" />
+                            <AppIcon :name="tab.icon" class="h-4 w-4" />
                             {{ tab.label }}
                         </button>
                     </nav>
@@ -144,10 +144,10 @@
                             :class="achievement.earned ? '' : 'opacity-50'"
                         >
                             <div
-                                class="mb-3 flex h-14 w-14 items-center justify-center rounded-full text-2xl"
-                                :class="achievement.earned ? 'bg-emerald-50' : 'bg-slate-100 grayscale'"
+                                class="mb-3 flex h-14 w-14 items-center justify-center rounded-full"
+                                :class="achievement.earned ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'"
                             >
-                                {{ achievementEmoji(achievement.icon) }}
+                                <AppIcon :name="achievement.icon" class="h-7 w-7" />
                             </div>
                             <p class="text-sm font-semibold text-slate-800">{{ achievementLabel(achievement) }}</p>
                             <p
@@ -174,7 +174,7 @@
 </template>
 
 <script setup>
-import { computed, h, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useHead } from '@unhead/vue';
@@ -183,6 +183,7 @@ import { useInfiniteScroll } from '../composables/useInfiniteScroll';
 import { useAuthStore } from '../stores/auth';
 import CatchDetailModal from '../components/posts/CatchDetailModal.vue';
 import PostCard from '../components/posts/PostCard.vue';
+import AppIcon from '../components/shared/AppIcon.vue';
 
 const { t, te } = useI18n();
 const route = useRoute();
@@ -218,69 +219,34 @@ const handle = computed(() => {
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
-const HookIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M12 3v10m0 0a3 3 0 103 3M12 13a3 3 0 10-3 3' }),
-]);
-
-const LakeIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3' }),
-]);
-
-const FishIcon = () => h('svg', { fill: 'currentColor', viewBox: '0 0 24 24' }, [
-    h('path', { d: 'M19.5 12c0 0-3-5-7.5-5S4.5 12 4.5 12 7.5 17 12 17s7.5-5 7.5-5zm1 0 3-2.5v5L20.5 12zM14 10.5a2 2 0 1 1-4 0 2 2 0 0 1 4 0z' }),
-]);
-
-const UsersIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' }),
-]);
-
-const HeartIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' }),
-]);
-
-const TrophyIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M5 3h14M9 3v2a3 3 0 003 3h0a3 3 0 003-3V3M5 3v2a5 5 0 005 5h4a5 5 0 005-5V3M7 10v1a5 5 0 005 5h0a5 5 0 005-5v-1M9 21h6' }),
-]);
-
-const GridIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('rect', { x: '3', y: '3', width: '7', height: '7' }),
-    h('rect', { x: '14', y: '3', width: '7', height: '7' }),
-    h('rect', { x: '14', y: '14', width: '7', height: '7' }),
-    h('rect', { x: '3', y: '14', width: '7', height: '7' }),
-]);
-
-const DocIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' }),
-]);
-
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 const statItems = computed(() => {
     if (!fisher.value?.stats) return [];
     const s = fisher.value.stats;
     return [
-        { key: 'catches', icon: HookIcon, value: s.catches_count, label: t('stats.catches') },
-        { key: 'lakes', icon: LakeIcon, value: s.lakes_visited, label: t('stats.lakesVisited') },
+        { key: 'catches', icon: 'hook', value: s.catches_count, label: t('stats.catches') },
+        { key: 'lakes', icon: 'lake', value: s.lakes_visited, label: t('stats.lakesVisited') },
         {
             key: 'fish',
-            icon: FishIcon,
+            icon: 'fish',
             value: s.biggest_fish_weight ? `${s.biggest_fish_weight} ${t('stats.kg')}` : '—',
             sub: s.biggest_fish_name || null,
             label: t('stats.biggestFish'),
         },
-        { key: 'followers', icon: UsersIcon, value: s.followers_count, label: t('stats.followers') },
-        { key: 'likes', icon: HeartIcon, value: s.total_likes ?? 0, label: t('stats.likes') },
-        { key: 'ranking', icon: TrophyIcon, value: `#${s.ranking}`, label: t('stats.ranking') },
+        { key: 'followers', icon: 'users', value: s.followers_count, label: t('stats.followers') },
+        { key: 'likes', icon: 'heart', value: s.total_likes ?? 0, label: t('stats.likes') },
+        { key: 'ranking', icon: 'trophy', value: `#${s.ranking}`, label: t('stats.ranking') },
     ];
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
 const tabs = computed(() => [
-    { key: 'publications', label: t('fisher.publications'), icon: GridIcon },
-    { key: 'posts',        label: t('fisher.posts'),        icon: DocIcon },
-    { key: 'catches',      label: t('fisher.catches'),      icon: FishIcon },
-    { key: 'achievements', label: t('fisher.achievements'), icon: TrophyIcon },
+    { key: 'publications', label: t('fisher.publications'), icon: 'grid' },
+    { key: 'posts',        label: t('fisher.posts'),        icon: 'doc' },
+    { key: 'catches',      label: t('fisher.catches'),      icon: 'fish' },
+    { key: 'achievements', label: t('fisher.achievements'), icon: 'trophy' },
 ]);
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
@@ -381,10 +347,6 @@ function handleCommentAdded(postId) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const achievementIcons = { star: '⭐', fish: '🐟', lake: '🏞️', camera: '📷', moon: '🌙' };
-function achievementEmoji(icon) {
-    return achievementIcons[icon] || '🏅';
-}
 function achievementLabel(achievement) {
     const key = `achievements.${achievement.id}.title`;
     return te(key) ? t(key) : achievement.title;

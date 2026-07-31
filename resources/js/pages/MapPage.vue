@@ -33,9 +33,7 @@
                 class="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 md:hidden"
                 @click="showList = false"
             >
-                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M18 6 6 18M6 6l12 12"/>
-                </svg>
+                <AppIcon name="close" class="h-4 w-4" />
             </button>
             <LakeList
                 :lakes="lakesStore.lakes"
@@ -70,6 +68,7 @@ import LakeMap from '../components/map/LakeMap.vue';
 import LakeCard from '../components/lakes/LakeCard.vue';
 import LakeList from '../components/lakes/LakeList.vue';
 import { useLakesStore } from '../stores/lakes';
+import AppIcon from '../components/shared/AppIcon.vue';
 
 const lakesStore = useLakesStore();
 const route = useRoute();

@@ -217,7 +217,7 @@
                 <button type="button"
                     class="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-600 transition"
                     @click="showAddLake = true">
-                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    <AppIcon name="plus" class="h-4 w-4" />
                     Додати озеро
                 </button>
             </div>
@@ -316,6 +316,7 @@ import {
     unblockUser,
 } from '../../api/admin';
 import AddLakeModal from './AddLakeModal.vue';
+import AppIcon from '../../components/shared/AppIcon.vue';
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 const tabs = [
