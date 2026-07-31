@@ -19,6 +19,9 @@ class LakeResource extends JsonResource
             'price' => $this->price,
             'rating' => $this->rating,
             'reviews_count' => $this->reviews_count,
+            // 'google' when the score was imported from Google Maps — the UI has
+            // to say so rather than present it as a ProFisher rating.
+            'rating_source' => $this->rating_source,
             'fish_species' => $this->fish_species,
             'area_ha' => $this->area_ha,
             'max_depth_m' => $this->max_depth_m,

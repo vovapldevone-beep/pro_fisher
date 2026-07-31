@@ -24,9 +24,18 @@
                 {{ lake.price }} PLN / день
             </p>
         </div>
-        <div v-if="lake.rating" class="flex shrink-0 items-center gap-1">
-            <AppIcon name="star" class="h-4 w-4 text-amber-400" fill="currentColor" />
-            <span class="text-sm font-medium text-slate-600">{{ lake.rating }}</span>
+        <div v-if="lake.rating" class="flex shrink-0 flex-col items-end">
+            <div class="flex items-center gap-1">
+                <AppIcon name="star" class="h-4 w-4 text-amber-400" fill="currentColor" />
+                <span class="text-sm font-medium text-slate-600">{{ lake.rating }}</span>
+            </div>
+            <!-- Imported scores stay labelled: they are not our users' ratings -->
+            <span
+                v-if="lake.rating_source === 'google'"
+                class="whitespace-nowrap text-[10px] leading-tight text-slate-400"
+            >
+                оцінка Google
+            </span>
         </div>
     </button>
 </template>

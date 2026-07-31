@@ -173,6 +173,7 @@ MySQL in production, database `pro_fisher`. Migrations are in `database/migratio
 
 Key tables:
 - `users` — plus `username` (nullable unique, the public @handle), `location`, `bio`, `avatar_url`, `badge`, `is_admin`, `is_blocked`, `google_id` (nullable unique), `password` (nullable — OAuth users)
+- `lakes` — plus `rating_source` (nullable, `'google'` when the score was imported from Google Maps). It drives an "оцінка Google" label next to the star in `LakeListItem`, `PopularLakeItem` and `LakeDetailPage`, and it **gates the schema.org `aggregateRating`** in `SpaController::lakeJsonLd()` — marking up a score collected elsewhere is against Google's structured-data policy, and pairing it with our own review count would misstate both. On such a lake `reviews_count` is Google's tally, so the reviews tab and heading on `LakeDetailPage` count `lake.reviews.length` instead, or an imported lake would title an empty list "Відгуки (1821)".
 - `catches` — `user_id`, `lake_id` (nullable), `type` (catch|post), `fish_name` (nullable), `weight`, `photo`, `caught_at` (nullable), `notes`, `location` (nullable)
 - `post_likes` — `user_id`, `catch_id` (unique together)
 - `catch_comments` — `catch_id`, `user_id`, `body`
@@ -188,6 +189,7 @@ Key tables:
 - `UserContentSeeder` — 2–10 random posts/catches per **demo user only** (skips real accounts and users who already have posts). Photos named `catches/user{id}_{n}.jpg`.
 - `PhotoContentSeeder` — creates exactly one publication per photo already in `storage/app/public/catches` (`user{id}_{n}.{ext}`), fully deterministic, **excludes users 9 & 10** (`EXCLUDED_USER_IDS`). Use this (not `UserContentSeeder`) when uploading real photos — the count follows the disk, so records never drift from files.
 - `PostLikeSeeder` — 2–15 likes per publication, only **demo users** hand out likes; publications already at ≥2 likes are skipped.
+- `WarsawLakeSeeder` — 70 water bodies within ~60 km of Warsaw, parsed from Google Maps into `database/seeders/data/warsaw_lakes.json`. Photos are Google `place-photos` URLs stored as-is (`LakeResource` passes `http…` paths through), 3 per lake. Every row gets `rating_source = 'google'`. Six of them (`Halinów`, `Stara Cegielnia`, `Perła Mazowsza Bielawa`, `Lindis`, `Rusiec`, `Koszajec`) already existed as hand-entered lakes under different names, so the seeder holds an **`ALIASES` map** and folds those rows into the existing record instead of creating a second card: `rating`/`reviews_count`/`latitude`/`longitude` always come from Google (the old rows carried the 4.5 default and a hand-placed pin — Koszajec's was 3.2 km out), everything an operator may have typed is filled only when empty, and the phone is reformatted to `+48 …` only when the digits already match. Photos are written once, so a curated gallery survives a re-run. Pairing is by address and phone, not proximity — which is why it is a fixed list rather than a distance check.
 
 ### Deployment
 

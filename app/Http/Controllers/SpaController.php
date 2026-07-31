@@ -130,8 +130,11 @@ class SpaController extends Controller
             ]);
         }
 
+        // Only our own score is eligible. Google forbids marking up a rating
+        // collected elsewhere as the page's aggregate, and pairing an imported
+        // score with our review count would misstate both.
         $reviewCount = $lake->reviews->count();
-        if ($lake->rating && $reviewCount > 0) {
+        if ($lake->rating && $reviewCount > 0 && $lake->rating_source === null) {
             $data['aggregateRating'] = [
                 '@type' => 'AggregateRating',
                 'ratingValue' => (float) $lake->rating,

@@ -58,10 +58,15 @@
                 <!-- Info -->
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900">Озеро {{ lake.name }}</h1>
-                    <div class="mt-2 flex items-center gap-2">
+                    <div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <AppIcon name="star" class="h-5 w-5 text-emerald-500" fill="currentColor" />
                         <span class="font-semibold text-slate-900">{{ lake.rating }}</span>
-                        <span class="text-slate-500">({{ lake.reviews_count }} відгуків)</span>
+                        <!-- An imported score is labelled, and its review count is
+                             Google's — never the count of reviews written here. -->
+                        <span v-if="lake.rating_source === 'google'" class="text-slate-500">
+                            оцінка Google ({{ lake.reviews_count }} відгуків у Google)
+                        </span>
+                        <span v-else class="text-slate-500">({{ lake.reviews_count }} відгуків)</span>
                     </div>
 
                     <ul class="mt-6 space-y-3 text-sm text-slate-600">
@@ -270,7 +275,7 @@
                 </div>
 
                 <div v-else-if="activeTab === 'reviews'" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h3 class="mb-4 font-bold text-slate-900">Відгуки ({{ lake.reviews_count }})</h3>
+                    <h3 class="mb-4 font-bold text-slate-900">Відгуки ({{ ownReviewsCount }})</h3>
                     <div class="space-y-6">
                         <div v-for="review in lake.reviews" :key="review.id" class="border-b border-slate-100 pb-4 last:border-0">
                             <div class="flex items-center gap-2">
@@ -351,12 +356,15 @@ useHead({
 });
 const activeTab = ref('overview');
 const activePhotoIndex = ref(0);
+const ownReviewsCount = computed(() => lake.value?.reviews?.length ?? 0);
 // const selectedPermit = ref(1); // використовувався віджетом купівлі дозволу
 
 const tabs = computed(() => [
     { id: 'overview', label: 'Огляд' },
     { id: 'catches', label: 'Улови' },
-    { id: 'reviews', label: 'Відгуки', badge: lake.value?.reviews_count },
+    // Our own reviews, not `reviews_count` — on an imported lake that column
+    // holds Google's tally and would label an empty list "1821".
+    { id: 'reviews', label: 'Відгуки', badge: ownReviewsCount.value },
     { id: 'rules', label: 'Правила' },
     { id: 'directions', label: 'Як дістатися' },
 ]);
