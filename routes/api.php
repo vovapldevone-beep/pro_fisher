@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::get('/stats', [AdminController::class, 'stats']);
+        Route::get('/chart', [AdminController::class, 'chart']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::post('/users/{user}/block', [AdminController::class, 'blockUser']);
         Route::post('/users/{user}/unblock', [AdminController::class, 'unblockUser']);
@@ -60,6 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Before the {catchRecord} route so "bulk" isn't captured as a model id
         Route::post('/catches/bulk-delete', [AdminController::class, 'deleteCatches']);
         Route::delete('/catches/{catchRecord}', [AdminController::class, 'deleteCatch']);
+        // Before the {lake:id} routes so "heat" isn't captured as a model id
+        Route::get('/lakes/heat', [AdminController::class, 'lakesHeat']);
         Route::get('/lakes', [AdminController::class, 'lakes']);
         Route::post('/lakes', [AdminController::class, 'storeLake']);
         Route::get('/lakes/{lake:id}', [AdminController::class, 'showLake']);

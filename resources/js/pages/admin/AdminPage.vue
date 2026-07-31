@@ -29,16 +29,84 @@
         <!-- Dashboard -->
         <div v-if="activeTab === 'dashboard'">
             <div v-if="loadingStats" class="py-20 text-center text-slate-400">Завантаження...</div>
-            <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-                <div
-                    v-for="card in statCards"
-                    :key="card.label"
-                    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm text-center"
-                >
-                    <p class="text-3xl font-bold" :class="card.color">{{ card.value }}</p>
-                    <p class="mt-1 text-xs text-slate-500">{{ card.label }}</p>
+            <template v-else>
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                    <!-- A card with a `view` drives the panel below; the rest are
+                         plain counters and render as a div, not a button. -->
+                    <component
+                        :is="card.view ? 'button' : 'div'"
+                        v-for="card in statCards"
+                        :key="card.label"
+                        :type="card.view ? 'button' : null"
+                        class="rounded-2xl border bg-white p-5 text-center shadow-sm transition"
+                        :class="[
+                            card.view ? 'cursor-pointer hover:border-slate-300 hover:shadow' : 'border-slate-200',
+                            card.view && dashboardView === card.view
+                                ? 'border-slate-900 ring-2 ring-slate-900'
+                                : 'border-slate-200',
+                        ]"
+                        :aria-pressed="card.view ? dashboardView === card.view : null"
+                        @click="selectView(card.view)"
+                    >
+                        <p class="text-3xl font-bold" :class="card.color">{{ card.value }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ card.label }}</p>
+                    </component>
                 </div>
-            </div>
+
+                <div class="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-bold text-slate-900">{{ chartTitle }}</h3>
+                            <p v-if="dashboardView === 'lakes'" class="text-xs text-slate-500">
+                                {{ heat?.data?.length ?? 0 }} озер на карті ·
+                                найбільше уловів на одному:
+                                <span class="font-semibold text-slate-700">{{ heat?.max_catches ?? 0 }}</span>
+                            </p>
+                            <p v-else class="text-xs text-slate-500">
+                                {{ groupLabel }}
+                                <template v-for="s in chart?.series ?? []" :key="s.key">
+                                    · {{ s.label }}: <span class="font-semibold text-slate-700">{{ s.total }}</span>
+                                </template>
+                            </p>
+                        </div>
+                        <!-- The period only means anything for a time series -->
+                        <div v-if="dashboardView !== 'lakes'" class="flex gap-1 rounded-xl bg-slate-100 p-1">
+                            <button
+                                v-for="period in periods"
+                                :key="period.days"
+                                type="button"
+                                class="rounded-lg px-3 py-1.5 text-xs font-medium transition"
+                                :class="chartDays === period.days
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'"
+                                @click="chartDays = period.days"
+                            >
+                                {{ period.label }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="dashboardView === 'lakes'">
+                        <div v-if="loadingHeat" class="flex h-80 items-center justify-center text-sm text-slate-400">
+                            Завантаження карти...
+                        </div>
+                        <!-- Mounted only once the points are in: Leaflet measures its
+                             container on init and an empty map cannot be re-fitted. -->
+                        <LakesHeatMap
+                            v-else-if="heat"
+                            :points="heat.data"
+                            :max-catches="heat.max_catches"
+                        />
+                    </div>
+
+                    <StatsChart
+                        v-else
+                        :labels="chart?.labels ?? []"
+                        :series="chart?.series ?? []"
+                        :loading="loadingChart"
+                    />
+                </div>
+            </template>
         </div>
 
         <!-- Users -->
@@ -310,13 +378,17 @@ import {
     blockUser,
     deleteLake,
     fetchAdminCatches,
+    fetchAdminChart,
     fetchAdminLakes,
+    fetchAdminLakesHeat,
     fetchAdminStats,
     fetchAdminUsers,
     unblockUser,
 } from '../../api/admin';
 import AddLakeModal from './AddLakeModal.vue';
 import AppIcon from '../../components/shared/AppIcon.vue';
+import LakesHeatMap from '../../components/admin/LakesHeatMap.vue';
+import StatsChart from '../../components/admin/StatsChart.vue';
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 const tabs = [
@@ -331,16 +403,18 @@ const activeTab = ref('dashboard');
 const stats = ref(null);
 const loadingStats = ref(true);
 
+// `view` is what the card shows below when clicked. Cards without one are
+// plain counters and stay unclickable.
 const statCards = computed(() => {
     if (!stats.value) return [];
     return [
-        { label: 'Користувачів',  value: stats.value.users_count,    color: 'text-slate-900' },
+        { label: 'Користувачів',  value: stats.value.users_count,    color: 'text-slate-900',   view: 'users' },
         { label: 'Заблоковано',   value: stats.value.blocked_count,   color: 'text-red-600' },
-        { label: 'Уловів',        value: stats.value.catches_count,   color: 'text-emerald-600' },
-        { label: 'Постів',        value: stats.value.posts_count,     color: 'text-blue-600' },
+        { label: 'Уловів',        value: stats.value.catches_count,   color: 'text-emerald-600', view: 'publications' },
+        { label: 'Постів',        value: stats.value.posts_count,     color: 'text-blue-600',    view: 'publications' },
         { label: 'Лайків',        value: stats.value.likes_count,     color: 'text-pink-500' },
         { label: 'Коментарів',    value: stats.value.comments_count,  color: 'text-violet-600' },
-        { label: 'Озер',          value: stats.value.lakes_count,     color: 'text-cyan-600' },
+        { label: 'Озер',          value: stats.value.lakes_count,     color: 'text-cyan-600',    view: 'lakes' },
     ];
 });
 
@@ -352,6 +426,75 @@ async function loadStats() {
         loadingStats.value = false;
     }
 }
+
+// ── Dashboard chart ───────────────────────────────────────────────────────────
+const dashboardView = ref('users');
+const chartDays = ref(90);
+const chart = ref(null);
+const loadingChart = ref(false);
+
+const periods = [
+    { days: 30, label: '30 днів' },
+    { days: 90, label: '3 місяці' },
+    { days: 365, label: 'Рік' },
+];
+
+const chartTitle = computed(() => ({
+    users: 'Нові користувачі',
+    publications: 'Публікації',
+    lakes: 'Теплова карта озер',
+}[dashboardView.value]));
+
+// The server widens the grouping on longer ranges; say which one is on screen
+// so a flat week is not read as a flat day.
+const groupLabel = computed(() => ({
+    day: 'по днях',
+    week: 'по тижнях',
+    month: 'по місяцях',
+}[chart.value?.group] ?? ''));
+
+async function loadChart() {
+    if (dashboardView.value === 'lakes') return;
+
+    loadingChart.value = true;
+    const [metric, days] = [dashboardView.value, chartDays.value];
+
+    try {
+        const data = await fetchAdminChart(metric, days);
+
+        // Drop a response whose metric or period was switched while in flight
+        if (dashboardView.value === metric && chartDays.value === days) {
+            chart.value = data;
+        }
+    } finally {
+        loadingChart.value = false;
+    }
+}
+
+// ── Lake heat map ─────────────────────────────────────────────────────────────
+const heat = ref(null);
+const loadingHeat = ref(false);
+
+async function loadHeat() {
+    // Lake coordinates change about as often as lakes are added — fetch once
+    if (heat.value || loadingHeat.value) return;
+
+    loadingHeat.value = true;
+    try {
+        heat.value = await fetchAdminLakesHeat();
+    } finally {
+        loadingHeat.value = false;
+    }
+}
+
+function selectView(view) {
+    if (!view || dashboardView.value === view) return;
+    dashboardView.value = view;
+
+    if (view === 'lakes') loadHeat();
+}
+
+watch([dashboardView, chartDays], loadChart);
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 const users = ref([]);
@@ -544,5 +687,8 @@ watch(activeTab, (tab) => {
     if (tab === 'lakes' && !lakes.value.length) loadLakes();
 });
 
-onMounted(loadStats);
+onMounted(() => {
+    loadStats();
+    loadChart();
+});
 </script>

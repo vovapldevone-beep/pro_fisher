@@ -122,7 +122,22 @@
       "Bash(curl -s \"http://127.0.0.1:8899/lakes/lowisko-rusiec\")",
       "Bash(grep -c \"https://\\\\${\")",
       "Bash(grep -c 'https://\\\\${' resources/js/pages/LakeDetailPage.vue)",
-      "Bash(grep -n 'https://\\\\${\\\\|websiteUrl\\\\|websiteLabel' resources/js/pages/LakeDetailPage.vue)"
+      "Bash(grep -n 'https://\\\\${\\\\|websiteUrl\\\\|websiteLabel' resources/js/pages/LakeDetailPage.vue)",
+      "Bash(node -e \"console.log\\('chart.js', require\\('./node_modules/chart.js/package.json'\\).version\\)\")",
+      "Bash(grep -oE \"\\\\[2026-07-31[^]]*\\\\] local\\\\.ERROR: [^\\\\\\\\\\\\\\\\]{0,160}\")",
+      "Bash(grep -oE \"local\\\\.ERROR: .{0,180}\" storage/logs/laravel.log)",
+      "Bash(pkill -f \"http.server 8901\")",
+      "Bash(python3 -m http.server 8901)",
+      "Bash(curl -s -o /dev/null -w \"server: %{http_code}\\\\n\" http://127.0.0.1:8901/)",
+      "Bash(timeout 60 google-chrome --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=900,1200 --virtual-time-budget=5000 --screenshot=/tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/chart.png http://127.0.0.1:8901/)",
+      "Bash(google-chrome --version)",
+      "Bash(timeout 60 google-chrome --headless=new --disable-gpu --no-sandbox --hide-scrollbars --window-size=900,1200 --virtual-time-budget=5000 --screenshot=/tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/chart.png http://127.0.0.1:8901/)",
+      "Bash(timeout 60 google-chrome --headless=new --disable-gpu --no-sandbox --hide-scrollbars --window-size=900,1500 --virtual-time-budget=5000 --screenshot=/tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/chart3.png http://127.0.0.1:8901/)",
+      "Bash(node -e \"console.log\\('leaflet.heat', require\\('./node_modules/leaflet.heat/package.json'\\).version\\)\")",
+      "Bash(python3 -m http.server 8902)",
+      "Bash(curl -s -o /dev/null -w \"server: %{http_code}\\\\n\" http://127.0.0.1:8902/)",
+      "Bash(timeout 90 google-chrome --headless=new --disable-gpu --no-sandbox --hide-scrollbars --window-size=1000,800 --virtual-time-budget=15000 --screenshot=/tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/heat1.png http://127.0.0.1:8902/)",
+      "Bash(pkill -f \"http.server 890\")"
     ],
     "additionalDirectories": [
       "/home/qwas/projects/pro_fisher/resources/js/pages",

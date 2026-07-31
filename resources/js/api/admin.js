@@ -2,6 +2,12 @@ import api from './client';
 
 export const fetchAdminStats = () => api.get('/admin/stats').then(r => r.data);
 
+// metric: 'users' | 'publications'
+export const fetchAdminChart = (metric, days = 30) =>
+    api.get('/admin/chart', { params: { metric, days } }).then(r => r.data);
+
+export const fetchAdminLakesHeat = () => api.get('/admin/lakes/heat').then(r => r.data);
+
 export const fetchAdminUsers = (page = 1) => api.get('/admin/users', { params: { page } }).then(r => r.data);
 export const blockUser = (id) => api.post(`/admin/users/${id}/block`).then(r => r.data);
 export const unblockUser = (id) => api.post(`/admin/users/${id}/unblock`).then(r => r.data);
