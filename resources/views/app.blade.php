@@ -64,7 +64,16 @@
                 @if ($lake->description)<p>{{ $lake->description }}</p>@endif
                 @if ($lake->fish_species)<p>Види риби: {{ $lake->fish_species }}</p>@endif
                 @if ($lake->price)<p>Дозвіл від {{ $lake->price }} PLN / день</p>@endif
-                @if ($lake->rating)<p>Рейтинг: {{ $lake->rating }} / 5 ({{ $lake->reviews->count() }} відгуків)</p>@endif
+                {{-- The suffix is built here, not inline: `@else(` reads as a
+                     directive with an argument and Blade eats the bracket. --}}
+                @if ($lake->rating)
+                    @php
+                        $ratingNote = $lake->rating_source === 'google'
+                            ? "(оцінка Google, {$lake->reviews_count} відгуків у Google)"
+                            : '('.$lake->reviews->count().' відгуків)';
+                    @endphp
+                    <p>Рейтинг: {{ $lake->rating }} / 5 {{ $ratingNote }}</p>
+                @endif
 
                 @if ($lake->recentCatches->isNotEmpty())
                     <h2>Останні улови на озері {{ $lake->name }}</h2>

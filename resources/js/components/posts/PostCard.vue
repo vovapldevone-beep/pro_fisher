@@ -43,9 +43,7 @@
                         :class="liked ? 'text-red-400' : 'text-white/70 hover:text-red-400'"
                         @click.stop="handleLike"
                     >
-                        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
+                        <AppIcon name="heart" class="h-3.5 w-3.5 sm:h-4 sm:w-4" :fill="liked ? 'currentColor' : 'none'" />
                         <span>{{ likesCount }}</span>
                     </button>
                     <button
@@ -53,9 +51,7 @@
                         class="flex items-center gap-1 text-white/70 transition hover:text-white"
                         @click.stop="$emit('select')"
                     >
-                        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
+                        <AppIcon name="comment" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         <span>{{ catchItem.comments_count ?? 0 }}</span>
                     </button>
                 </div>
@@ -70,12 +66,12 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { toggleLike } from '../../api/catches';
+import { computed } from 'vue';
+import { useLike } from '../../composables/useLike';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
+import AppIcon from '../shared/AppIcon.vue';
+import { shortPlace } from '../../utils/place';
 
 const props = defineProps({
     catchItem: { type: Object, required: true },
@@ -84,12 +80,10 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'like-changed']);
 
-const router = useRouter();
-const authStore = useAuthStore();
-
-
-const liked = ref(props.catchItem.is_liked ?? false);
-const likesCount = ref(props.catchItem.likes_count ?? 0);
+const { liked, likesCount, toggle: handleLike } = useLike(
+    () => props.catchItem,
+    (change) => emit('like-changed', change)
+);
 
 const title = computed(() => {
     const full = props.catchItem.fish_name || props.catchItem.notes || 'Пост';
@@ -107,35 +101,17 @@ const locationBadge = computed(() => {
     const c = props.catchItem;
     if (c.location) {
         return {
-            label: 'Локація: ' + c.location,
+            label: 'Локація: ' + shortPlace(c.location),
             url: `https://www.google.com/maps/search/${encodeURIComponent(c.location)}`,
         };
     }
     if (c.lake?.latitude && c.lake?.longitude) {
         return {
-            label: 'Озеро: ' + c.lake.name,
+            label: 'Озеро: ' + shortPlace(c.lake.name),
             url: `https://www.google.com/maps?q=${c.lake.latitude},${c.lake.longitude}`,
         };
     }
     return null;
 });
-
-async function handleLike() {
-    if (!authStore.isAuthenticated) {
-        router.push({ name: 'login' });
-        return;
-    }
-    liked.value = !liked.value;
-    likesCount.value += liked.value ? 1 : -1;
-    try {
-        const result = await toggleLike(props.catchItem.id);
-        liked.value = result.liked;
-        likesCount.value = result.likes_count;
-        emit('like-changed', { id: props.catchItem.id, liked: result.liked, likes_count: result.likes_count });
-    } catch {
-        liked.value = !liked.value;
-        likesCount.value += liked.value ? 1 : -1;
-    }
-}
 
 </script>

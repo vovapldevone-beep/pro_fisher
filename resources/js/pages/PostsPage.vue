@@ -113,6 +113,7 @@
             :post="selectedPost"
             @close="selectedPost = null"
             @comment-added="handleCommentAdded"
+            @like-changed="handleLikeChanged"
             @edit="startEdit"
             @deleted="handleDeleted"
         />
@@ -130,17 +131,19 @@
             :show="showAddCatch"
             :lakes="lakesStore.lakes"
             :saving="catchesStore.saving"
+            :error="catchesStore.error"
             @submit="handleAddCatch"
-            @close="showAddCatch = false"
-            @switch="showAddCatch = false; showAddPost = true"
+            @close="closeAddModals"
+            @switch="closeAddModals(); showAddPost = true"
         />
 
         <AddPostModal
             :show="showAddPost"
             :saving="catchesStore.saving"
+            :error="catchesStore.error"
             @submit="handleAddPost"
-            @close="showAddPost = false"
-            @switch="showAddPost = false; showAddCatch = true"
+            @close="closeAddModals"
+            @switch="closeAddModals(); showAddCatch = true"
         />
     </div>
 </template>
@@ -357,16 +360,32 @@ function handleDeleted(id) {
     catches.value = catches.value.filter((c) => c.id !== id);
 }
 
+// Keep the modal open when publishing fails — the message is in
+// catchesStore.error, and the user should not have to retype the post.
 async function handleAddCatch(formData) {
-    await catchesStore.addCatch(formData);
-    showAddCatch.value = false;
+    try {
+        await catchesStore.addCatch(formData);
+    } catch {
+        return;
+    }
+    closeAddModals();
     reloadFeed(); // the new record belongs on page 1
 }
 
 async function handleAddPost(formData) {
-    await catchesStore.addCatch(formData);
-    showAddPost.value = false;
+    try {
+        await catchesStore.addCatch(formData);
+    } catch {
+        return;
+    }
+    closeAddModals();
     reloadFeed();
+}
+
+function closeAddModals() {
+    showAddCatch.value = false;
+    showAddPost.value = false;
+    catchesStore.error = ''; // otherwise it greets the user again on the next open
 }
 </script>
 

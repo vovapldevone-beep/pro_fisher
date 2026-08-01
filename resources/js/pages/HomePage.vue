@@ -44,7 +44,7 @@
                         class="flex min-w-0 items-center gap-2 rounded-xl bg-white/10 px-3 py-2.5 backdrop-blur-sm sm:gap-3 sm:px-4 sm:py-3"
                     >
                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-emerald-400 sm:h-10 sm:w-10">
-                            <component :is="stat.icon" class="h-4 w-4 sm:h-5 sm:w-5" />
+                            <AppIcon :name="stat.icon" class="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
                         <p class="min-w-0 text-xs font-medium leading-tight text-white sm:text-sm">
                             <span class="font-bold">{{ stat.value }}</span>
@@ -102,11 +102,12 @@
 </template>
 
 <script setup>
-import { computed, h, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchHomeStats, fetchPopularLakes, fetchRecentCatches } from '../api/home';
 import PopularLakeItem from '../components/home/PopularLakeItem.vue';
 import RecentCatchItem from '../components/home/RecentCatchItem.vue';
+import AppIcon from '../components/shared/AppIcon.vue';
 import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
@@ -122,27 +123,11 @@ function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-const LakeIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' }),
-]);
-
-const FishIcon = () => h('svg', { fill: 'currentColor', viewBox: '0 0 24 24' }, [
-    h('path', { d: 'M12 2C8 6 4 8 4 12c0 3 2 5 4 6 1-2 3-3 5-3s4 1 5 3c2-1 4-3 4-6 0-4-4-6-8-10z' }),
-]);
-
-const UserIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' }),
-]);
-
-const TrophyIcon = () => h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-    h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M5 3h14M9 3v2a3 3 0 003 3h0a3 3 0 003-3V3M5 3v2a5 5 0 005 5h4a5 5 0 005-5V3M7 10v1a5 5 0 005 5h0a5 5 0 005-5v-1M9 21h6' }),
-]);
-
 const statsItems = computed(() => [
-    { icon: LakeIcon, value: formatNumber(stats.value.lakes_count), label: 'озер у базі' },
-    { icon: FishIcon, value: formatNumber(stats.value.catches_count), label: 'уловів додано' },
-    { icon: UserIcon, value: formatNumber(stats.value.users_count), label: 'рибалок з нами' },
-    { icon: TrophyIcon, value: formatNumber(stats.value.contests_count), label: 'активні конкурси' },
+    { icon: 'lake', value: formatNumber(stats.value.lakes_count), label: 'озер у базі' },
+    { icon: 'fish', value: formatNumber(stats.value.catches_count), label: 'уловів додано' },
+    { icon: 'user', value: formatNumber(stats.value.users_count), label: 'рибалок з нами' },
+    { icon: 'trophy', value: formatNumber(stats.value.contests_count), label: 'активні конкурси' },
 ]);
 
 function handleSearch() {

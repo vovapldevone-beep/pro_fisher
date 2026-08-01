@@ -10,8 +10,8 @@ export async function fetchAchievements() {
     return data;
 }
 
-export async function fetchFriends() {
-    const { data } = await api.get('/cabinet/friends');
+export async function fetchFriends(params = {}) {
+    const { data } = await api.get('/cabinet/friends', { params });
     return data;
 }
 

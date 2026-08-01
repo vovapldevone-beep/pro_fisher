@@ -15,7 +15,10 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
+        $data = $request->validated();
+        $data['username'] = User::generateUsername($data['name']);
+
+        $user = User::create($data);
 
         Auth::login($user);
 
@@ -34,6 +37,7 @@ class AuthController extends Controller
 
         if (Auth::user()->is_blocked) {
             Auth::logout();
+
             return response()->json([
                 'message' => 'Ваш акаунт заблоковано.',
             ], 403);
@@ -68,7 +72,7 @@ class AuthController extends Controller
     public function updateProfile(Request $request): JsonResponse
     {
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'avatar' => 'nullable|image|max:4096',
         ]);
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\EnsureNotBlocked;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,8 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        // Laravel 11+ dropped `throttle:api` from the default api group, so
+        // without this line every endpoint is unlimited. The named limiters
+        // live in AppServiceProvider.
+        $middleware->throttleApi();
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'blocked' => EnsureNotBlocked::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

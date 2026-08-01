@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'price',
     'rating',
     'reviews_count',
+    'rating_source',
     'fish_species',
     'area_ha',
     'max_depth_m',

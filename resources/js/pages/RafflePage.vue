@@ -6,9 +6,7 @@
                 class="mb-6 flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-emerald-700"
                 @click="$router.back()"
             >
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
+                <AppIcon name="chevron-left" class="h-4 w-4" />
                 {{ t('common.viewAll') }}
             </button>
 
@@ -20,6 +18,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import RaffleCard from '../components/fish/RaffleCard.vue';
+import AppIcon from '../components/shared/AppIcon.vue';
 
 const { t } = useI18n();
 </script>

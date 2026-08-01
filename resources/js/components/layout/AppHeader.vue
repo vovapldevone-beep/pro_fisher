@@ -68,9 +68,7 @@
                 </div>
 
                 <button type="button" class="hidden p-2 text-white/70 hover:text-white sm:block" aria-label="Пошук">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <AppIcon name="search" class="h-5 w-5" />
                 </button>
 
                 <button
@@ -137,6 +135,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
 import { useFishStore } from '../../stores/fish';
 import { setLocale } from '../../i18n';
+import AppIcon from '../shared/AppIcon.vue';
 
 defineProps({
     // Slides the header out of view on mobile; ignored from md up

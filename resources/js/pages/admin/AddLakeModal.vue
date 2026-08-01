@@ -6,7 +6,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                 <h2 class="text-lg font-semibold text-slate-900">{{ isEdit ? 'Редагувати озеро' : 'Додати озеро' }}</h2>
                 <button type="button" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600" @click="$emit('close')">
-                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    <AppIcon name="close" class="h-5 w-5" />
                 </button>
             </div>
 
@@ -45,9 +45,7 @@
                                 class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
                                 @click="removeExistingPhoto(p)"
                             >
-                                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <path d="M18 6 6 18M6 6l12 12"/>
-                                </svg>
+                                <AppIcon name="close" class="h-3.5 w-3.5" />
                             </button>
                         </div>
 
@@ -69,9 +67,7 @@
                                 class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
                                 @click="removePhoto(idx)"
                             >
-                                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <path d="M18 6 6 18M6 6l12 12"/>
-                                </svg>
+                                <AppIcon name="close" class="h-3.5 w-3.5" />
                             </button>
                         </div>
 
@@ -82,7 +78,7 @@
                             class="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-slate-200 text-slate-400 transition hover:border-emerald-400 hover:text-emerald-500"
                             @click="fileInput.click()"
                         >
-                            <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                            <AppIcon name="plus" class="h-6 w-6" />
                         </button>
                     </div>
 
@@ -169,9 +165,7 @@
                                 <svg v-if="!geocoding" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
                                 </svg>
-                                <svg v-else viewBox="0 0 24 24" class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
-                                </svg>
+                                <AppIcon name="spinner" class="h-4 w-4 animate-spin" />
                                 Знайти
                             </button>
                         </div>
@@ -191,9 +185,7 @@
                                         <path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/>
                                         <circle cx="12" cy="12" r="8"/>
                                     </svg>
-                                    <svg v-else viewBox="0 0 24 24" class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 12a9 9 0 1 1-6.219-8.56" stroke-linecap="round"/>
-                                    </svg>
+                                    <AppIcon name="spinner" class="h-4 w-4 animate-spin" />
                                 </span>
                                 <span>
                                     <span class="block font-medium text-slate-800">Моє місцезнаходження</span>
@@ -300,6 +292,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import L from 'leaflet';
 import { createLake, fetchAdminLake, updateLake } from '../../api/admin';
+import AppIcon from '../../components/shared/AppIcon.vue';
 
 const props = defineProps({
     lake: { type: Object, default: null },

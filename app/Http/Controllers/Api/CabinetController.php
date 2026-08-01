@@ -12,6 +12,7 @@ use App\Models\PostLike;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
 class CabinetController extends Controller
 {
     public function show(Request $request): JsonResponse
@@ -54,6 +55,7 @@ class CabinetController extends Controller
         return response()->json([
             'profile' => [
                 'name' => $user->name,
+                'username' => $user->username,
                 'email' => $user->email,
                 'location' => $user->location,
                 'bio' => $user->bio,
@@ -76,37 +78,56 @@ class CabinetController extends Controller
         ]);
     }
 
+    /**
+     * One page of either tab of the friends modal.
+     *
+     * Paginated rather than returned whole: a popular account can have thousands
+     * of followers, and the modal only ever shows a screenful at a time.
+     * `counts` is sent on every page so the tab labels stay correct while the
+     * list is still being scrolled in.
+     */
     public function friends(Request $request): JsonResponse
     {
         $user = $request->user();
+        $tab = $request->query('tab') === 'followers' ? 'followers' : 'following';
 
-        $following = Follow::where('follower_id', $user->id)
-            ->with('following:id,name,avatar_url,badge')
-            ->get()
-            ->pluck('following')
-            ->filter();
+        // following → the people I follow; followers → the people who follow me
+        $theirColumn = $tab === 'following' ? 'following_id' : 'follower_id';
+        $myColumn = $tab === 'following' ? 'follower_id' : 'following_id';
 
-        $followers = Follow::where('following_id', $user->id)
-            ->with('follower:id,name,avatar_url,badge')
-            ->get()
-            ->pluck('follower')
-            ->filter();
+        $page = User::query()
+            ->join('follows', 'follows.'.$theirColumn, '=', 'users.id')
+            ->where('follows.'.$myColumn, $user->id)
+            // Newest connection first, and a stable order for pagination
+            ->orderByDesc('follows.id')
+            ->paginate(15, ['users.id', 'users.name', 'users.username', 'users.avatar_url', 'users.badge']);
 
-        $followingIds = $following->pluck('id')->all();
-
-        $shape = fn (User $u) => [
-            'id' => $u->id,
-            'name' => $u->name,
-            'avatar_url' => $u->avatar_url,
-            'badge' => $u->badge,
-        ];
+        $followingIds = $tab === 'followers'
+            ? Follow::where('follower_id', $user->id)
+                ->whereIn('following_id', $page->pluck('id'))
+                ->pluck('following_id')
+                ->all()
+            : [];
 
         return response()->json([
-            'following' => $following->map($shape)->values(),
-            'followers' => $followers->map(fn (User $u) => $shape($u) + [
+            'data' => $page->getCollection()->map(fn (User $u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->username,
+                'avatar_url' => $u->avatar_url,
+                'badge' => $u->badge,
                 // Lets the UI mark people who follow you back
-                'is_following' => in_array($u->id, $followingIds, true),
+                'is_following' => $tab === 'following' || in_array($u->id, $followingIds, true),
             ])->values(),
+            'meta' => [
+                'current_page' => $page->currentPage(),
+                'last_page' => $page->lastPage(),
+                'total' => $page->total(),
+            ],
+            'counts' => [
+                'following' => Follow::where('follower_id', $user->id)->count(),
+                'followers' => Follow::where('following_id', $user->id)->count(),
+            ],
         ]);
     }
 
@@ -272,7 +293,7 @@ class CabinetController extends Controller
                         'type' => 'catch',
                         'data' => [
                             'fish_name' => $d['fish_name'] ?? '',
-                            'weight'    => $d['weight'] ?? '',
+                            'weight' => $d['weight'] ?? '',
                             'lake_name' => $d['lake_name'] ?? '',
                         ],
                         'created_at' => $activity->created_at->toISOString(),
@@ -281,7 +302,7 @@ class CabinetController extends Controller
                         'type' => 'following',
                         'data' => [
                             'name' => $d['following_name'] ?? '',
-                            'id'   => $d['following_id'] ?? null,
+                            'id' => $d['following_id'] ?? null,
                         ],
                         'created_at' => $activity->created_at->toISOString(),
                     ],
@@ -289,7 +310,7 @@ class CabinetController extends Controller
                         'type' => 'follower',
                         'data' => [
                             'name' => $d['follower_name'] ?? '',
-                            'id'   => $d['follower_id'] ?? null,
+                            'id' => $d['follower_id'] ?? null,
                         ],
                         'author_name' => $d['follower_name'] ?? '',
                         'created_at' => $activity->created_at->toISOString(),

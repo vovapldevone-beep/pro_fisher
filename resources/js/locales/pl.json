@@ -182,7 +182,12 @@
     "followers": "Obserwujący",
     "mutual": "Wzajemnie",
     "emptyFollowing": "Nie obserwujesz jeszcze nikogo",
-    "emptyFollowers": "Nikt Cię jeszcze nie obserwuje"
+    "emptyFollowers": "Nikt Cię jeszcze nie obserwuje",
+    "searchPlaceholder": "Szukaj po imieniu lub {'@'}identyfikatorze",
+    "searchResults": "Wyniki wyszukiwania",
+    "searchEmpty": "Nikogo nie znaleziono",
+    "follow": "Obserwuj",
+    "followed": "Obserwujesz"
   },
   "fish": {
     "counterTitle": "Znajdź 10 rybek ukrytych w tablicy!",

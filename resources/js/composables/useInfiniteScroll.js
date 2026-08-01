@@ -1,4 +1,4 @@
-import { onUnmounted, ref, watch } from 'vue';
+import { onUnmounted, ref, unref, watch } from 'vue';
 
 /**
  * Loads the next page when a sentinel element scrolls into view.
@@ -14,7 +14,7 @@ import { onUnmounted, ref, watch } from 'vue';
  *     and nothing more ever loads. Keeping `isIntersecting` as state and reacting
  *     to `loading` falling back to false continues the chain.
  */
-export function useInfiniteScroll(sentinelRef, { loading, hasMore, onLoad, rootMargin = '300px' }) {
+export function useInfiniteScroll(sentinelRef, { loading, hasMore, onLoad, rootMargin = '300px', root = null }) {
     const isIntersecting = ref(false);
     let observer = null;
 
@@ -30,8 +30,9 @@ export function useInfiniteScroll(sentinelRef, { loading, hasMore, onLoad, rootM
 
         observer = new IntersectionObserver(
             ([entry]) => (isIntersecting.value = entry.isIntersecting),
-            // The app scrolls inside <main>, not the window
-            { root: document.querySelector('main'), rootMargin, threshold: 0 },
+            // The app scrolls inside <main>, not the window. `root` overrides that
+            // for lists that scroll in their own box, e.g. inside a modal.
+            { root: unref(root) ?? document.querySelector('main'), rootMargin, threshold: 0 },
         );
         observer.observe(el);
     }, { immediate: true, flush: 'post' });
