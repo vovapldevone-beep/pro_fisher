@@ -109,6 +109,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { fetchComments, postComment } from '../../api/comments';
 import { useAuthStore } from '../../stores/auth';
 import LocationBadge from '../shared/LocationBadge.vue';
+import { shortPlace } from '../../utils/place';
 import UserAvatar from '../shared/UserAvatar.vue';
 import AppIcon from '../shared/AppIcon.vue';
 
@@ -171,13 +172,13 @@ const locationBadge = computed(() => {
     const p = props.post;
     if (p.location) {
         return {
-            label: 'Локація: ' + p.location,
+            label: 'Локація: ' + shortPlace(p.location),
             url: `https://www.google.com/maps/search/${encodeURIComponent(p.location)}`,
         };
     }
     if (p.lake?.latitude && p.lake?.longitude) {
         return {
-            label: 'Озеро: ' + p.lake.name,
+            label: 'Озеро: ' + shortPlace(p.lake.name),
             url: `https://www.google.com/maps?q=${p.lake.latitude},${p.lake.longitude}`,
         };
     }

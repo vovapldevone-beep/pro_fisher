@@ -73,6 +73,7 @@ import { toggleLike } from '../../api/catches';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
 import AppIcon from '../shared/AppIcon.vue';
+import { shortPlace } from '../../utils/place';
 
 const props = defineProps({
     catchItem: { type: Object, required: true },
@@ -104,13 +105,13 @@ const locationBadge = computed(() => {
     const c = props.catchItem;
     if (c.location) {
         return {
-            label: 'Локація: ' + c.location,
+            label: 'Локація: ' + shortPlace(c.location),
             url: `https://www.google.com/maps/search/${encodeURIComponent(c.location)}`,
         };
     }
     if (c.lake?.latitude && c.lake?.longitude) {
         return {
-            label: 'Озеро: ' + c.lake.name,
+            label: 'Озеро: ' + shortPlace(c.lake.name),
             url: `https://www.google.com/maps?q=${c.lake.latitude},${c.lake.longitude}`,
         };
     }

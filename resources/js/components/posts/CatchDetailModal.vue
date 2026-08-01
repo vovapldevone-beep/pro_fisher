@@ -78,8 +78,12 @@
                         <div v-else class="flex h-56 w-full items-center justify-center text-6xl sm:h-72 md:h-full">🐟</div>
                     </div>
 
-                    <!-- Details column -->
-                    <div class="flex min-h-0 flex-1 flex-col">
+                    <!-- Details column. min-w-0: without it the column cannot
+                         shrink below its content, and a long location badge
+                         (white-space: nowrap) pushes it past the panel edge —
+                         `max-w-full` on the badge does not help, a percentage
+                         max-width is ignored while intrinsic widths are computed. -->
+                    <div class="flex min-h-0 min-w-0 flex-1 flex-col">
 
                     <!-- Post info. On desktop the close button sits in this column's
                          top-right corner, so the content starts below it. -->
@@ -184,6 +188,7 @@ import { useAuthStore } from '../../stores/auth';
 import { useFishStore } from '../../stores/fish';
 import HiddenFish from '../fish/HiddenFish.vue';
 import LocationBadge from '../shared/LocationBadge.vue';
+import { shortPlace } from '../../utils/place';
 import UserAvatar from '../shared/UserAvatar.vue';
 import AppIcon from '../shared/AppIcon.vue';
 
@@ -324,13 +329,13 @@ const locationBadge = computed(() => {
     if (!p) return null;
     if (p.location) {
         return {
-            label: t('post.locationLabel', { name: p.location }),
+            label: t('post.locationLabel', { name: shortPlace(p.location) }),
             url: `https://www.google.com/maps/search/${encodeURIComponent(p.location)}`,
         };
     }
     if (p.lake?.latitude && p.lake?.longitude) {
         return {
-            label: t('post.lakeLabel', { name: p.lake.name }),
+            label: t('post.lakeLabel', { name: shortPlace(p.lake.name) }),
             url: `https://www.google.com/maps?q=${p.lake.latitude},${p.lake.longitude}`,
         };
     }

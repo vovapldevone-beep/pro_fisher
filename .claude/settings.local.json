@@ -137,7 +137,14 @@
       "Bash(python3 -m http.server 8902)",
       "Bash(curl -s -o /dev/null -w \"server: %{http_code}\\\\n\" http://127.0.0.1:8902/)",
       "Bash(timeout 90 google-chrome --headless=new --disable-gpu --no-sandbox --hide-scrollbars --window-size=1000,800 --virtual-time-budget=15000 --screenshot=/tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/heat1.png http://127.0.0.1:8902/)",
-      "Bash(pkill -f \"http.server 890\")"
+      "Bash(pkill -f \"http.server 890\")",
+      "Bash(cp /home/qwas/projects/pro_fisher/public/build/assets/app-B5hdKg3N.css app.css)",
+      "Bash(sed -i 's#href=\"/home/qwas/projects/pro_fisher/public/build/assets/app-B5hdKg3N.css\"#href=\"app.css\"#' loc.html)",
+      "Bash(google-chrome --headless=new --disable-gpu --window-size=1000,1100 --screenshot=loc.png loc.html)",
+      "Bash(google-chrome --headless=new --disable-gpu --window-size=1000,1150 --screenshot=loc.png loc.html)",
+      "Bash(google-chrome --headless=new --disable-gpu --window-size=1000,1150 --screenshot=loc2.png loc.html)",
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(python3 -c \"import json,sys;[print\\(r['method'],r['uri'],'|',r['middleware']\\) for r in json.load\\(sys.stdin\\)]\")"
     ],
     "additionalDirectories": [
       "/home/qwas/projects/pro_fisher/resources/js/pages",
