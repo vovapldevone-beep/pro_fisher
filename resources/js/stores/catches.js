@@ -6,6 +6,10 @@ export const useCatchesStore = defineStore('catches', () => {
     const catches = ref([]);
     const loading = ref(false);
     const saving = ref(false);
+    // Last publish failure, shown inside the add modal. Without it a rejected
+    // request (a rate limit, a 5 MB photo) left the button springing back with
+    // nothing on screen.
+    const error = ref('');
 
     async function loadCatches() {
         loading.value = true;
@@ -18,10 +22,14 @@ export const useCatchesStore = defineStore('catches', () => {
 
     async function addCatch(formData) {
         saving.value = true;
+        error.value = '';
         try {
             const created = await createCatch(formData);
             catches.value.unshift(created);
             return created;
+        } catch (e) {
+            error.value = e.response?.data?.message || 'Не вдалося опублікувати. Спробуйте ще раз.';
+            throw e;
         } finally {
             saving.value = false;
         }
@@ -50,6 +58,7 @@ export const useCatchesStore = defineStore('catches', () => {
         catches,
         loading,
         saving,
+        error,
         loadCatches,
         addCatch,
         editCatch,

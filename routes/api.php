@@ -12,8 +12,8 @@ use App\Http\Controllers\Api\LakeController;
 use App\Http\Controllers\Api\LikeController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::get('/home/stats', [HomeController::class, 'stats']);
 Route::get('/home/popular-lakes', [HomeController::class, 'popularLakes']);
@@ -27,7 +27,9 @@ Route::get('/fishers/{user}', [FisherController::class, 'show']);
 Route::get('/fishers/{user}/posts', [FisherController::class, 'posts']);
 Route::get('/catches/{catchRecord}/comments', [CommentController::class, 'index']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// `blocked`: an admin ban has to end the session that is already open,
+// not just refuse the next login
+Route::middleware(['auth:sanctum', 'blocked'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/user/profile', [AuthController::class, 'updateProfile']);
@@ -44,10 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/fishers/{user}/follow', [FisherController::class, 'follow']);
     Route::delete('/fishers/{user}/follow', [FisherController::class, 'unfollow']);
 
-    Route::post('/catches/{catchRecord}/like', [LikeController::class, 'toggle']);
-    Route::post('/catches/{catchRecord}/comments', [CommentController::class, 'store']);
+    Route::post('/catches/{catchRecord}/like', [LikeController::class, 'toggle'])->middleware('throttle:likes');
+    Route::post('/catches/{catchRecord}/comments', [CommentController::class, 'store'])->middleware('throttle:comments');
     Route::get('/catches', [CatchController::class, 'index']);
-    Route::post('/catches', [CatchController::class, 'store']);
+    Route::post('/catches', [CatchController::class, 'store'])->middleware('throttle:publications');
     Route::put('/catches/{catchRecord}', [CatchController::class, 'update']);
     Route::delete('/catches/{catchRecord}', [CatchController::class, 'destroy']);
 

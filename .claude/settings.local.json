@@ -144,7 +144,9 @@
       "Bash(google-chrome --headless=new --disable-gpu --window-size=1000,1150 --screenshot=loc.png loc.html)",
       "Bash(google-chrome --headless=new --disable-gpu --window-size=1000,1150 --screenshot=loc2.png loc.html)",
       "Bash(node --input-type=module -e ' *)",
-      "Bash(python3 -c \"import json,sys;[print\\(r['method'],r['uri'],'|',r['middleware']\\) for r in json.load\\(sys.stdin\\)]\")"
+      "Bash(python3 -c \"import json,sys;[print\\(r['method'],r['uri'],'|',r['middleware']\\) for r in json.load\\(sys.stdin\\)]\")",
+      "Bash(pkill -f \"artisan serve\")",
+      "Bash(grep -n \"Protected API routes use the \\\\`auth:sanctum\\\\`\" CLAUDE.md)"
     ],
     "additionalDirectories": [
       "/home/qwas/projects/pro_fisher/resources/js/pages",

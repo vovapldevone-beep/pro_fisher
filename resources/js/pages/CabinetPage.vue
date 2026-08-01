@@ -212,17 +212,19 @@
             :show="showAddCatch"
             :lakes="lakesStore.lakes"
             :saving="catchesStore.saving"
+            :error="catchesStore.error"
             @submit="handleAddCatch"
-            @close="showAddCatch = false"
-            @switch="showAddCatch = false; showAddPost = true"
+            @close="closeAddModals"
+            @switch="closeAddModals(); showAddPost = true"
         />
 
         <AddPostModal
             :show="showAddPost"
             :saving="catchesStore.saving"
+            :error="catchesStore.error"
             @submit="handleAddPost"
-            @close="showAddPost = false"
-            @switch="showAddPost = false; showAddCatch = true"
+            @close="closeAddModals"
+            @switch="closeAddModals(); showAddCatch = true"
         />
 
         <EditProfileModal
@@ -473,18 +475,34 @@ function handleDeleted(id) {
 
 // ─── Modals ───────────────────────────────────────────────────────────────────
 
+// Keep the modal open when publishing fails — the message is in
+// catchesStore.error, and the user should not have to retype the post.
 async function handleAddCatch(formData) {
-    await catchesStore.addCatch(formData);
-    showAddCatch.value = false;
+    try {
+        await catchesStore.addCatch(formData);
+    } catch {
+        return;
+    }
+    closeAddModals();
     resetPosts();
     await Promise.all([loadCabinet(), loadPosts(true)]);
 }
 
 async function handleAddPost(formData) {
-    await catchesStore.addCatch(formData);
-    showAddPost.value = false;
+    try {
+        await catchesStore.addCatch(formData);
+    } catch {
+        return;
+    }
+    closeAddModals();
     resetPosts();
     await Promise.all([loadCabinet(), loadPosts(true)]);
+}
+
+function closeAddModals() {
+    showAddCatch.value = false;
+    showAddPost.value = false;
+    catchesStore.error = ''; // otherwise it greets the user again on the next open
 }
 
 function handleProfileSaved(updatedUser) {

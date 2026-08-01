@@ -2,6 +2,7 @@
     <ModalDialog
         :show="show"
         :saving="saving"
+        :error="error"
         :submit-label="t('catch.add')"
         :tabs="[
             { key: 'post', label: t('post.new') },
@@ -117,6 +118,7 @@ const props = defineProps({
     show: { type: Boolean, default: false },
     lakes: { type: Array, default: () => [] },
     saving: { type: Boolean, default: false },
+    error: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close', 'submit', 'switch']);

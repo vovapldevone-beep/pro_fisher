@@ -43,6 +43,11 @@
                         <slot />
                     </div>
 
+                    <!-- Submit failure (rate limit, oversized photo, …) -->
+                    <p v-if="error" class="mx-6 mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+                        {{ error }}
+                    </p>
+
                     <!-- Footer -->
                     <div class="flex flex-shrink-0 gap-3 border-t border-slate-100 px-6 py-4">
                         <button
@@ -80,6 +85,7 @@ const props = defineProps({
     saving: { type: Boolean, default: false },
     submitLabel: { type: String, default: '' },
     savingLabel: { type: String, default: '' },
+    error: { type: String, default: '' },
     // Optional header tabs: [{key, label}]. When set, replaces the title.
     tabs: { type: Array, default: null },
     activeTab: { type: String, default: '' },

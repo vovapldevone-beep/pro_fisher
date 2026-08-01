@@ -39,7 +39,23 @@ Laravel serves one Blade view (`resources/views/app.blade.php`) for all non-API 
 
 Auth uses **Laravel Sanctum in session mode** (cookie-based, not token-based). Before calling `/api/login` or `/api/register`, the frontend calls `initCsrf()` (`resources/js/api/client.js`) which hits `/sanctum/csrf-cookie` to set the CSRF cookie. The axios client reads the CSRF token from the `<meta name="csrf-token">` tag and sends it as `X-CSRF-TOKEN` on every request.
 
-Protected API routes use the `auth:sanctum` middleware.
+Protected API routes use the `auth:sanctum` middleware, plus `blocked` (see Anti-spam).
+
+### Anti-spam / rate limiting
+
+Laravel 11+ **dropped `throttle:api` from the default `api` group** (it used to live in `Kernel.php`), so until `bootstrap/app.php` called `$middleware->throttleApi()` every endpoint — publishing, comments, likes, login, register — was unlimited. Named limiters are defined in `AppServiceProvider::configureRateLimiting()` and keyed per user id, falling back to IP for guests, so a NAT does not share one quota between its visitors:
+
+- `api` — 90/min, the baseline on every route.
+- `publications` (`POST /api/catches`) — **two** limits: 3/min stops a script, 20/hour still allows unloading a whole trip.
+- `comments` — 5/min + 20 per 10 min. `likes` — 30/min.
+- `login` — 5/min per `email|ip` **and** 20/min per ip, so one attacker cannot lock out a whole NAT and a password spray gets no fresh budget per account.
+- `register` — 3/hour per ip.
+
+All of them return a Ukrainian 429 body (`tooFast()`); the framework default is English `Too Many Attempts.` and the SPA shows the message verbatim. Uses the `database` cache store (`CACHE_STORE=database`), no Redis needed.
+
+**`EnsureNotBlocked` middleware** (alias `blocked`, on the whole `auth:sanctum` group): `is_blocked` used to be checked **only at login**, so an admin ban left the spammer's open session posting until the cookie expired. It logs the session out and returns 403 with `blocked: true` — a machine-readable flag, because a plain 403 is indistinguishable from `AdminMiddleware`'s. The response interceptor in `api/client.js` reacts to that flag by clearing the auth store and redirecting to `/login?error=blocked` (a message `LoginPage` already renders). Imports there are dynamic — the auth store and the router both import `client.js`.
+
+Publish failures surface in the modal: `catches` store keeps an `error`, `ModalDialog` has an `error` prop, and `handleAddPost`/`handleAddCatch` in PostsPage/CabinetPage keep the modal **open** on failure so the text is not lost. Before this, a rejected publish (rate limit, 5 MB photo) produced an unhandled rejection and a silently dead button.
 
 **Google OAuth** (`laravel/socialite`, `GoogleAuthController`): routes live in **`routes/web.php`** (NOT `/api`) — `GET /auth/google/redirect` and `GET /auth/google/callback` — because a full-page redirect from Google is not a stateful-frontend request, so under the `api` group it would get no session and `Auth::login` could not persist. The callback finds by `google_id`, else **links by email** to an existing account (Google emails are verified → safe), else creates a user (`password` nullable, `email_verified_at` set, avatar from Google). Blocked users bounce to `/login?error=blocked`. Config in `config/services.google` (`GOOGLE_CLIENT_ID`/`SECRET`/`REDIRECT_URI`). `users.google_id` column added; `password` made nullable. Frontend: `components/shared/GoogleSignInButton.vue` (a plain `<a href="/auth/google/redirect">`) on Login/Register pages. Redirect URI must be `<APP_URL>/auth/google/callback` exactly. Only works over HTTPS (localhost excepted) — needs Google Cloud Console credentials.
 
@@ -108,6 +124,7 @@ The server has no Node, so no SSR/prerender. Instead **`SpaController`** renders
 | Pages | `pages/` | Route-level components |
 | Components | `components/` | Grouped by domain (`cabinet/`, `catches/`, `lakes/`, `map/`, `layout/`, `posts/`, `shared/`, `fish/`) |
 | Composables | `composables/` | `useScrollLock`, `useHideOnScroll`, `useInfiniteScroll`, `useGeolocation` |
+| Utils | `utils/` | Pure helpers — `place.js` (`shortPlace`) |
 | Router | `router/index.js` | History-mode router; `requiresAuth` and `guest` meta guards |
 
 Route guards in `router/index.js` redirect unauthenticated users to `/login` (with `redirect` query param). Auth is restored on page reload via `authReady` flag — `fetchUser()` called once before first navigation. **After login the home page is `/posts`** — the guard redirects an authenticated user hitting `/` (or `guest` pages) to `/posts`; Login/Register also push there. The "Спільнота" nav item (`/`) is commented out in `AppSidebar.vue` and the App.vue mobile nav.
@@ -143,12 +160,12 @@ Two conventions this relies on. Nav/stat/tab arrays hold the icon **name**, not 
 
 **Shared components** (`components/shared/`):
 - `UserAvatar.vue` — clickable avatar (own profile → `/cabinet`, other → `/fishers/:id`). Props: `user`, `size` (sm/md/lg).
-- `LocationBadge.vue` — semi-transparent blue badge linking to Google Maps. Props: `label`, `url`.
-- `ModalDialog.vue` — shared modal wrapper (overlay + header + footer buttons). Props: `show`, `title`, `saving`, `submitLabel`, `savingLabel`, plus optional `tabs` (`[{key,label}]`) + `activeTab` — when set, the header becomes two equal tab columns instead of the title and emits `tab` on click. `AddPostModal`/`AddCatchModal` use this: both show "Новий пост | Новий улов" tabs and emit `switch`; parents (PostsPage, CabinetPage) close one modal and open the other. Everywhere a single "+ Додати публікацію" button (`common.addPublication`) opens `AddPostModal` — no separate add-catch button.
+- `LocationBadge.vue` — semi-transparent blue badge linking to Google Maps. Props: `label`, `url`. The label is truncated twice over, because either alone is not enough. **By meaning**, in `utils/place.js` — `shortPlace()` keeps the first two comma-separated parts, since Nominatim returns the whole administrative chain (a real record: `озеро Кірпічка, Війтівська Гора, Дрогобич, …, Україна`, 117 characters) and cutting that by width alone showed `озеро Кірпічк…`, hiding the very name. Called at the three places that build the label — `PostCard`, `CatchDetailModal`, `PostCommentSidebar`. **By width**, via the badge's own `truncate`, for long lake names on narrow cards.
+- `ModalDialog.vue` — shared modal wrapper (overlay + header + footer buttons). Props: `show`, `title`, `saving`, `error` (red banner above the footer), `submitLabel`, `savingLabel`, plus optional `tabs` (`[{key,label}]`) + `activeTab` — when set, the header becomes two equal tab columns instead of the title and emits `tab` on click. `AddPostModal`/`AddCatchModal` use this: both show "Новий пост | Новий улов" tabs and emit `switch`; parents (PostsPage, CabinetPage) close one modal and open the other. Everywhere a single "+ Додати публікацію" button (`common.addPublication`) opens `AddPostModal` — no separate add-catch button.
 
 **Opening modals from anywhere**: navigate to `/cabinet?action=add-catch` or `/cabinet?action=add-post`. `CabinetPage` watches `route.query.action` (immediate) and opens the modal, then clears the query. AppHeader uses this pattern for its single "+ Додати публікацію" button (`add-post`; `add-catch` still works via URL).
 
-**Catch detail modal**: `components/posts/CatchDetailModal.vue` — **full-screen zoom modal** (Teleport, `fixed inset-0`, springy scale-in), photo on the left (desktop, `object-contain` letterboxed) / details+comments on the right. Owner (`post.user_id === auth id`) gets a three-dot menu (Edit → emits `edit`; Delete → `deleteCatch`). Closes on ×, backdrop, Esc. Uses `useScrollLock`. A **10% chance per open** spawns a hidden fish (see Fish hunt). Opened from PostsPage/CabinetPage/FisherPage when a PostCard is clicked.
+**Catch detail modal**: `components/posts/CatchDetailModal.vue` — **full-screen zoom modal** (Teleport, `fixed inset-0`, springy scale-in), photo on the left (desktop, `object-contain` letterboxed) / details+comments on the right. The details column carries `min-w-0`: without it the `flex-1` column cannot shrink below its content, so the nowrap location badge pushed the whole column past the panel edge (the weight fell off the header row entirely). `max-w-full` on the badge does not help — a percentage `max-width` is ignored while intrinsic widths are being computed. Owner (`post.user_id === auth id`) gets a three-dot menu (Edit → emits `edit`; Delete → `deleteCatch`). Closes on ×, backdrop, Esc. Uses `useScrollLock`. A **10% chance per open** spawns a hidden fish (see Fish hunt). Opened from PostsPage/CabinetPage/FisherPage when a PostCard is clicked.
 
 **`components/posts/EditCatchModal.vue`**: edits a catch or post (type-aware fields). Uses `LakeSelect` for the place. `UpdateCatchRequest` allows `lake_id`/`location` as `nullable` (a catch needs one *or* the other — same rule as `StoreCatchRequest`, `required_without`).
 

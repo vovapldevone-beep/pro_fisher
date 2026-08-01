@@ -2,6 +2,7 @@
     <ModalDialog
         :show="show"
         :saving="saving"
+        :error="error"
         :submit-label="t('post.publish')"
         :saving-label="t('post.publishing')"
         :tabs="[
@@ -79,6 +80,7 @@ const { t } = useI18n();
 const props = defineProps({
     show: { type: Boolean, default: false },
     saving: { type: Boolean, default: false },
+    error: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close', 'submit', 'switch']);
