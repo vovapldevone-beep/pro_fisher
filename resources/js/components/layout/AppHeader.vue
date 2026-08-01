@@ -79,25 +79,43 @@
                     + {{ t('common.addPublication') }}
                 </button>
 
-                <!-- Language switcher -->
-                <div class="flex shrink-0 items-center overflow-hidden rounded-lg border border-white/20 text-xs font-semibold">
+                <!-- Language switcher: the current language is the trigger,
+                     the others drop down under it -->
+                <div ref="langRoot" class="relative shrink-0">
                     <button
                         type="button"
-                        class="px-2 py-1.5 transition sm:px-2.5"
-                        :class="locale === 'uk' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
-                        @click="setLocale('uk')"
+                        class="flex items-center gap-1 rounded-lg border border-white/20 px-2 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-2.5"
+                        :aria-expanded="langOpen"
+                        aria-haspopup="listbox"
+                        :aria-label="`Мова: ${currentLocale.label}`"
+                        @click="langOpen = !langOpen"
                     >
-                        UA
+                        {{ currentLocale.label }}
+                        <AppIcon
+                            name="chevron-down"
+                            class="h-3 w-3 text-white/60 transition-transform"
+                            :class="langOpen ? 'rotate-180' : ''"
+                        />
                     </button>
-                    <span class="text-white/20">|</span>
-                    <button
-                        type="button"
-                        class="px-2 py-1.5 transition sm:px-2.5"
-                        :class="locale === 'pl' ? 'bg-white/20 text-white' : 'text-white/50 hover:text-white'"
-                        @click="setLocale('pl')"
-                    >
-                        PL
-                    </button>
+
+                    <Transition name="fish-tip">
+                        <ul
+                            v-if="langOpen"
+                            class="absolute right-0 top-full z-50 mt-1 min-w-full overflow-hidden rounded-lg border border-white/20 bg-[#1a1f2e] shadow-xl"
+                            role="listbox"
+                        >
+                            <li v-for="option in otherLocales" :key="option.code">
+                                <button
+                                    type="button"
+                                    class="w-full px-2 py-1.5 text-xs font-semibold text-white/70 transition hover:bg-white/10 hover:text-white sm:px-2.5"
+                                    role="option"
+                                    @click="chooseLocale(option.code)"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </li>
+                        </ul>
+                    </Transition>
                 </div>
 
                 <template v-if="authStore.isAuthenticated">
@@ -129,7 +147,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../../stores/auth';
@@ -137,7 +155,7 @@ import { useFishStore } from '../../stores/fish';
 import { setLocale } from '../../i18n';
 import AppIcon from '../shared/AppIcon.vue';
 
-defineProps({
+const props = defineProps({
     // Slides the header out of view on mobile; ignored from md up
     hidden: { type: Boolean, default: false },
 });
@@ -148,6 +166,52 @@ const router = useRouter();
 const { t, locale } = useI18n();
 
 const fishTip = ref(false);
+
+// ─── Language dropdown ────────────────────────────────────────────────────────
+
+const LOCALES = [
+    { code: 'uk', label: 'UA' },
+    { code: 'pl', label: 'PL' },
+];
+
+const langOpen = ref(false);
+const langRoot = ref(null);
+
+const currentLocale = computed(
+    () => LOCALES.find(l => l.code === locale.value) ?? LOCALES[0]
+);
+// Only the alternatives drop down — the current one is already the trigger
+const otherLocales = computed(() => LOCALES.filter(l => l.code !== currentLocale.value.code));
+
+function chooseLocale(code) {
+    setLocale(code);
+    langOpen.value = false;
+}
+
+function onDocumentPointerDown(e) {
+    if (langOpen.value && langRoot.value && !langRoot.value.contains(e.target)) {
+        langOpen.value = false;
+    }
+}
+
+function onDocumentKeydown(e) {
+    if (e.key === 'Escape') langOpen.value = false;
+}
+
+onMounted(() => {
+    document.addEventListener('pointerdown', onDocumentPointerDown);
+    document.addEventListener('keydown', onDocumentKeydown);
+});
+onUnmounted(() => {
+    document.removeEventListener('pointerdown', onDocumentPointerDown);
+    document.removeEventListener('keydown', onDocumentKeydown);
+});
+
+// The header slides out of view on mobile scroll; a menu left hanging there
+// would reopen invisible
+watch(() => props.hidden, (isHidden) => {
+    if (isHidden) langOpen.value = false;
+});
 
 const allNavLinks = computed(() => [
     { to: '/map', label: t('nav.lakeMap') },
