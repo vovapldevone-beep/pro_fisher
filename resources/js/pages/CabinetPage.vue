@@ -337,7 +337,7 @@ const statItems = computed(() => {
         },
         { key: 'followers', icon: 'users', value: s.followers_count, label: t('stats.followers') },
         { key: 'likes', icon: 'heart', value: s.total_likes ?? 0, label: t('stats.likes') },
-        { key: 'ranking', icon: 'trophy', value: `#${s.ranking}`, label: t('stats.ranking') },
+        // No ranking chip — nothing computes it yet, so it only ever showed "#0"
     ];
 });
 

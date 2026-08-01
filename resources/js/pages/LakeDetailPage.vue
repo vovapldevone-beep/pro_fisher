@@ -10,15 +10,6 @@
                     <AppIcon name="chevron-left" class="h-4 w-4" />
                     Назад до карти
                 </router-link>
-                <div class="relative mx-auto hidden max-w-md flex-1 sm:block">
-                    <AppIcon name="search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Пошук озер..."
-                        class="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        @keydown.enter="goToMap"
-                    />
-                </div>
             </div>
         </div>
 
@@ -320,13 +311,12 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useHead } from '@unhead/vue';
 import { fetchLake } from '../api/lakes';
 import AppIcon from '../components/shared/AppIcon.vue';
 
 const route = useRoute();
-const router = useRouter();
 
 const lake = ref(null);
 const loading = ref(true);
@@ -410,10 +400,6 @@ function timeAgo(dateStr) {
 
 function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString('uk-UA');
-}
-
-function goToMap() {
-    router.push('/map');
 }
 
 onMounted(async () => {

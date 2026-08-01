@@ -1,7 +1,12 @@
 <template>
+    <!-- The offset follows the scroll 1:1, so no transition while it moves —
+         a transition here would lag a finger and feel like rubber. It is only
+         switched on for the snap at the end of a gesture. -->
     <header
-        class="fixed inset-x-0 top-0 z-50 bg-[#1a1f2e]/95 backdrop-blur-sm transition-transform duration-300 ease-out"
-        :class="hidden ? '-translate-y-full md:translate-y-0' : ''"
+        ref="rootEl"
+        class="fixed inset-x-0 top-0 z-50 bg-[#1a1f2e]/95 backdrop-blur-sm"
+        :class="settling ? 'transition-transform duration-200 ease-out' : ''"
+        :style="headerStyle"
     >
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <router-link to="/" class="flex min-w-0 items-center gap-2">
@@ -66,10 +71,6 @@
                         </div>
                     </Transition>
                 </div>
-
-                <button type="button" class="hidden p-2 text-white/70 hover:text-white sm:block" aria-label="Пошук">
-                    <AppIcon name="search" class="h-5 w-5" />
-                </button>
 
                 <button
                     type="button"
@@ -156,9 +157,26 @@ import { setLocale } from '../../i18n';
 import AppIcon from '../shared/AppIcon.vue';
 
 const props = defineProps({
-    // Slides the header out of view on mobile; ignored from md up
+    // True once the header is all the way up — drives the floating fish badge
+    // and closes the language menu; ignored from md up
     hidden: { type: Boolean, default: false },
+    // How far up the header currently sits, in px (0 = fully visible)
+    offset: { type: Number, default: 0 },
+    // Set only while the header snaps to one end after a gesture
+    settling: { type: Boolean, default: false },
 });
+
+// Handed to CSS as a variable rather than applied here, so the "never hides
+// from md up" rule can stay a media query instead of a JS breakpoint listener.
+const headerStyle = computed(() => ({ '--header-offset': `${props.offset}px` }));
+
+// App.vue measures the header to know how far it has to travel. It cannot use
+// $el: the comment above <header> is a second root node in dev builds (the
+// compiler only strips comments in production), which makes $el the comment
+// and its offsetHeight undefined — the measurement then silently fell back to
+// 65px while the real header is 70, leaving a 5px strip on screen.
+const rootEl = ref(null);
+defineExpose({ rootEl });
 
 const authStore = useAuthStore();
 const fishStore = useFishStore();
@@ -236,6 +254,18 @@ async function handleLogout() {
 </script>
 
 <style scoped>
+header {
+    transform: translate3d(0, calc(-1 * var(--header-offset, 0px)), 0);
+}
+
+/* Desktop keeps the header pinned — the sidebar and page layout assume the
+   65px band at the top is always there. */
+@media (min-width: 768px) {
+    header {
+        transform: none;
+    }
+}
+
 .fish-tip-enter-active,
 .fish-tip-leave-active {
     transition: opacity 0.15s ease, transform 0.15s ease;

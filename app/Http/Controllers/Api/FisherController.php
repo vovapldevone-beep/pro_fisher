@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Concerns\BuildsAchievements;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatchResource;
 use App\Models\Activity;
@@ -14,6 +15,8 @@ use Illuminate\Http\Request;
 
 class FisherController extends Controller
 {
+    use BuildsAchievements;
+
     public function show(User $user, Request $request): JsonResponse
     {
         $catches = CatchRecord::query()
@@ -27,6 +30,7 @@ class FisherController extends Controller
         $biggestCatch = $catches->sortByDesc('weight')->first();
         $photosCount = $catches->whereNotNull('photo')->count();
         $followersCount = Follow::where('following_id', $user->id)->count();
+        $nightCatchesCount = $this->countNightCatches($catches);
         $totalLikes = PostLike::whereIn('catch_id', $catches->pluck('id'))->count();
 
         $isFollowing = $request->user()
@@ -49,9 +53,8 @@ class FisherController extends Controller
                 'biggest_fish_name' => $biggestCatch?->fish_name,
                 'followers_count' => $followersCount,
                 'total_likes' => $totalLikes,
-                'ranking' => 0,
             ],
-            'achievements' => $this->buildAchievements($catchesCount, $lakesVisited, $photosCount, $biggestCatch),
+            'achievements' => $this->buildAchievements($catchesCount, $lakesVisited, $photosCount, $biggestCatch, $followersCount, $nightCatchesCount),
             'is_following' => $isFollowing,
         ]);
     }
@@ -183,19 +186,5 @@ class FisherController extends Controller
                 'total' => $paginated->total(),
             ],
         ]);
-    }
-
-    private function buildAchievements(int $catchesCount, int $lakesVisited, int $photosCount, ?CatchRecord $biggestCatch): array
-    {
-        $hasBigCarp = $biggestCatch && $biggestCatch->weight >= 10
-            && stripos($biggestCatch->fish_name, 'karp') !== false;
-
-        return [
-            ['id' => 'catches_100', 'title' => '100 уловів', 'icon' => 'star', 'earned' => $catchesCount >= 100],
-            ['id' => 'big_carp', 'title' => 'Перший короп 10+ кг', 'icon' => 'fish', 'earned' => $hasBigCarp || $catchesCount >= 3],
-            ['id' => 'explorer', 'title' => 'Відвідав 25 озер', 'icon' => 'lake', 'earned' => $lakesVisited >= 25 || $lakesVisited >= 3],
-            ['id' => 'photographer', 'title' => 'Фотограф 50 фото уловів', 'icon' => 'camera', 'earned' => $photosCount >= 50 || $photosCount >= 1],
-            ['id' => 'night', 'title' => 'Нічний рибалка 10 нічних уловів', 'icon' => 'moon', 'earned' => $catchesCount >= 5],
-        ];
     }
 }

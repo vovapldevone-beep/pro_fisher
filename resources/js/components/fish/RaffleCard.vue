@@ -8,8 +8,10 @@
         </div>
 
         <div class="space-y-6 p-6 sm:p-8">
-            <!-- Status -->
+            <!-- Status. Hidden for guests: there is no progress to show before
+                 signing up, and the endpoint behind it needs auth. -->
             <div
+                v-if="showProgress"
                 class="rounded-xl border p-4"
                 :class="fishStore.completed
                     ? 'border-emerald-200 bg-emerald-50'
@@ -43,7 +45,14 @@
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
                             {{ i + 1 }}
                         </span>
-                        <span class="pt-0.5">{{ step }}</span>
+                        <router-link
+                            v-if="step.to"
+                            :to="step.to"
+                            class="pt-0.5 font-semibold text-emerald-600 hover:underline"
+                        >
+                            {{ step.text }}
+                        </router-link>
+                        <span v-else class="pt-0.5">{{ step.text }}</span>
                     </li>
                 </ol>
             </div>
@@ -67,13 +76,26 @@ import { useFishStore } from '../../stores/fish';
 const { t } = useI18n();
 const fishStore = useFishStore();
 
-const steps = computed(() => [t('raffle.step1'), t('raffle.step2'), t('raffle.step3')]);
+const props = defineProps({
+    // Off for the guest home page — a visitor has no tally yet
+    showProgress: { type: Boolean, default: true },
+    // Prepends "sign up" as step one, linked to /register
+    signupStep: { type: Boolean, default: false },
+});
+
+const steps = computed(() => [
+    ...(props.signupStep ? [{ text: t('raffle.stepRegister'), to: '/register' }] : []),
+    { text: t('raffle.step1') },
+    { text: t('raffle.step2') },
+    { text: t('raffle.step3') },
+]);
 
 const progressPercent = computed(() =>
     fishStore.total ? Math.round((fishStore.found / fishStore.total) * 100) : 0
 );
 
 onMounted(() => {
-    if (!fishStore.loaded) fishStore.fetchProgress();
+    // The progress endpoint is auth-only, so a guest card must not ask for it
+    if (props.showProgress && !fishStore.loaded) fishStore.fetchProgress();
 });
 </script>

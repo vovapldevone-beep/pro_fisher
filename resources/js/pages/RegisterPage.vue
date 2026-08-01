@@ -1,19 +1,19 @@
 <template>
     <div class="flex min-h-[calc(100vh-57px)] items-center justify-center px-4 py-12">
         <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-            <h1 class="mb-6 text-2xl font-bold text-slate-900">Rejestracja</h1>
+            <h1 class="mb-6 text-2xl font-bold text-slate-900">{{ t('auth.registerTitle') }}</h1>
 
-            <GoogleSignInButton label="Zarejestruj się przez Google" />
+            <GoogleSignInButton :label="t('auth.googleRegister')" />
 
             <div class="my-5 flex items-center gap-3 text-xs text-slate-400">
                 <span class="h-px flex-1 bg-slate-200"></span>
-                lub
+                {{ t('auth.or') }}
                 <span class="h-px flex-1 bg-slate-200"></span>
             </div>
 
             <form class="space-y-4" @submit.prevent="handleSubmit">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Imię</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('auth.name') }}</label>
                     <input
                         v-model="form.name"
                         type="text"
@@ -22,7 +22,7 @@
                     />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('auth.email') }}</label>
                     <input
                         v-model="form.email"
                         type="email"
@@ -31,7 +31,7 @@
                     />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Hasło</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('auth.password') }}</label>
                     <input
                         v-model="form.password"
                         type="password"
@@ -41,7 +41,7 @@
                     />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Potwierdź hasło</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('auth.passwordConfirm') }}</label>
                     <input
                         v-model="form.password_confirmation"
                         type="password"
@@ -57,13 +57,13 @@
                     :disabled="authStore.loading"
                     class="w-full rounded-lg bg-emerald-600 py-2.5 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
-                    {{ authStore.loading ? 'Rejestracja...' : 'Zarejestruj się' }}
+                    {{ authStore.loading ? t('auth.registering') : t('auth.register') }}
                 </button>
             </form>
             <p class="mt-4 text-center text-sm text-slate-600">
-                Masz już konto?
+                {{ t('auth.haveAccount') }}
                 <router-link to="/login" class="font-medium text-emerald-700 hover:underline">
-                    Zaloguj się
+                    {{ t('auth.loginLink') }}
                 </router-link>
             </p>
         </div>
@@ -73,9 +73,11 @@
 <script setup>
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '../stores/auth';
 import GoogleSignInButton from '../components/shared/GoogleSignInButton.vue';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const router = useRouter();
 

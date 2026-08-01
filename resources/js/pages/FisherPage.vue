@@ -41,14 +41,6 @@
                                     >
                                         {{ isFollowing ? t('fisher.unfollow') : t('fisher.follow') }}
                                     </button>
-                                    <button
-                                        type="button"
-                                        class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
-                                    >
-                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -237,7 +229,7 @@ const statItems = computed(() => {
         },
         { key: 'followers', icon: 'users', value: s.followers_count, label: t('stats.followers') },
         { key: 'likes', icon: 'heart', value: s.total_likes ?? 0, label: t('stats.likes') },
-        { key: 'ranking', icon: 'trophy', value: `#${s.ranking}`, label: t('stats.ranking') },
+        // No ranking chip — nothing computes it yet, so it only ever showed "#0"
     ];
 });
 
