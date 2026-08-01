@@ -4,7 +4,7 @@
         style="height: 100vh; height: 100dvh"
     >
         <!-- Fixed header (still position:fixed, works fine) -->
-        <AppHeader :hidden="headerHidden" />
+        <AppHeader ref="headerRef" :hidden="headerHidden" :offset="headerOffset" :settling="headerSettling" />
 
         <!-- Floating fish counter: takes over on the Posts page when the mobile
              header has slid away, so the tally stays visible while hunting. -->
@@ -21,18 +21,17 @@
             </div>
         </Transition>
 
-        <!-- Content row: below the fixed header. On mobile the top padding
-             collapses in step with the header sliding away. -->
-        <div
-            class="flex min-h-0 flex-1 transition-[padding-top] duration-300 ease-out md:pt-[65px]"
-            :class="headerHidden ? 'pt-0' : 'pt-[65px]'"
-        >
+        <!-- Content row. The header's space is padding *inside* <main>, not on
+             this row: that way sliding the header away changes no element's
+             height, so the content never jumps and scrollHeight stays stable
+             while the header follows the scroll. -->
+        <div class="flex min-h-0 flex-1">
             <AppSidebar v-if="authStore.isAuthenticated" />
             <!-- overscroll-y-none kills the iOS rubber-band: bouncing past the edge
                  reports scrollTop outside its bounds and makes the header flap. -->
             <main
                 ref="mainEl"
-                class="min-h-0 flex-1 overflow-y-auto overscroll-y-none"
+                class="min-h-0 flex-1 overflow-y-auto overscroll-y-none pt-[65px]"
                 :class="authStore.isAuthenticated ? 'md:ml-16' : ''"
             >
                 <router-view />
@@ -81,7 +80,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import FireworksOverlay from './components/fish/FireworksOverlay.vue';
@@ -106,7 +105,50 @@ function openAddPublication() {
 }
 
 const mainEl = ref(null);
-const { hidden: headerHidden, show: showHeader } = useHideOnScroll(mainEl);
+const headerRef = ref(null);
+
+// How far the header has to travel to clear the screen. Measured, not the 65px
+// the layout reserves for it: the mobile header is actually 70px tall, and the
+// difference used to be left hanging at the top edge.
+const headerHeight = ref(65);
+
+// AppHeader exposes the element itself — $el is unreliable there (see the note
+// in AppHeader.vue), and a wrong measurement leaves part of the header on screen.
+function headerEl() {
+    return headerRef.value?.rootEl ?? null;
+}
+
+function measureHeader() {
+    const h = headerEl()?.offsetHeight;
+    if (h) headerHeight.value = h;
+}
+
+const {
+    hidden: headerHidden,
+    offset: headerOffset,
+    settling: headerSettling,
+    show: showHeader,
+} = useHideOnScroll(mainEl, { height: headerHeight });
+
+// Watched rather than measured once: the header grows and shrinks after mount
+// (the fish counter appears on login, the name row wraps on a narrow screen),
+// and a stale height is exactly what leaves a strip behind.
+let headerObserver = null;
+
+onMounted(() => {
+    measureHeader();
+    const el = headerEl();
+    if (el && window.ResizeObserver) {
+        headerObserver = new ResizeObserver(measureHeader);
+        headerObserver.observe(el);
+    } else {
+        window.addEventListener('resize', measureHeader);
+    }
+});
+onUnmounted(() => {
+    headerObserver?.disconnect();
+    window.removeEventListener('resize', measureHeader);
+});
 
 // A new page starts at the top, so the header belongs on screen.
 watch(() => route.fullPath, showHeader);

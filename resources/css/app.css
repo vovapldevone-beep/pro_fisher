@@ -12,6 +12,32 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+/* Tailwind v4's preflight resets buttons to `cursor: default` (v3 kept the
+   browser's pointer). Every <button> in the app is clickable, so put the hand
+   back — except on disabled ones, where a pointer would promise a dead click. */
+@layer base {
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    label[for],
+    summary {
+        cursor: pointer;
+    }
+}
+
+/* iOS Safari zooms the page in when a focused form control has a font smaller
+   than 16px, and never zooms back out — that is the "keyboard opens and the
+   site jumps" report. Most inputs here inherit a 14px text-sm from their row.
+   Deliberately NOT solved with maximum-scale=1 on the viewport: that also takes
+   away pinch-zoom from everyone. Left unlayered on purpose — Tailwind utilities
+   (text-sm on the input itself) would win over an @layer base rule. */
+@media (max-width: 767px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
 .leaflet-container {
     z-index: 0;
     font-family: inherit;

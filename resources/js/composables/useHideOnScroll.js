@@ -1,25 +1,58 @@
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, unref } from 'vue';
 
 /**
- * Hides an element on scroll down, reveals it on scroll up.
+ * Slides an element out of view as the page scrolls down and back in as it
+ * scrolls up — following the finger rather than flipping between two states.
  *
- * Listens on the given scroll container (the app scrolls inside <main>, not <body>).
- * `offset` keeps the element visible near the top so a short page can't hide it,
- * and `threshold` swallows the jitter of momentum scrolling on iOS.
+ * It used to be a boolean: one scroll gesture past a threshold and the header
+ * jumped the whole way up in a 300 ms transition, which reads as a flinch on a
+ * phone. Now `offset` tracks the scroll delta, so the header is exactly as far
+ * up as you have scrolled and counts as hidden the moment its bottom edge meets
+ * the top of the screen.
+ *
+ * Listens on the given scroll container (the app scrolls inside <main>, not
+ * <body>). This only works without layout jitter because the space for the
+ * header lives *inside* the scroll container — sliding it away no longer
+ * changes any element's height, so scrollHeight stays put.
+ *
+ * @param containerRef  the scrolling element
+ * @param height        travel distance before it is fully hidden — a number or
+ *                      a ref, since the real header height is only known once
+ *                      it has rendered (and 5 px of it stayed on screen while
+ *                      this was hardcoded to the reserved 65)
+ * @param snapDelay     ms of stillness after which a half-open element settles
  */
-/**
- * Slightly larger than the header, so the whole show/hide layout shift fits inside it.
- */
-const BOTTOM_DEAD_ZONE = 80;
+export function useHideOnScroll(containerRef, { height = 65, snapDelay = 140 } = {}) {
+    const offset = ref(0);
+    const settling = ref(false);
 
-export function useHideOnScroll(containerRef, { threshold = 8, offset = 65 } = {}) {
-    const hidden = ref(false);
+    const travel = () => unref(height) || 1;
+    const hidden = computed(() => offset.value >= travel() - 1);
 
     let lastY = 0;
     let ticking = false;
+    let snapTimer = null;
+
+    const clamp = (v) => Math.min(travel(), Math.max(0, v));
 
     function show() {
-        hidden.value = false;
+        clearTimeout(snapTimer);
+        settling.value = false;
+        offset.value = 0;
+        lastY = containerRef.value?.scrollTop ?? 0;
+    }
+
+    /** Leaving the header half-way up looks like a bug, so it settles either way. */
+    function scheduleSnap() {
+        clearTimeout(snapTimer);
+
+        if (offset.value === 0 || offset.value === travel()) return;
+
+        snapTimer = setTimeout(() => {
+            settling.value = true;
+            offset.value = offset.value > travel() / 2 ? travel() : 0;
+            setTimeout(() => { settling.value = false; }, 220);
+        }, snapDelay);
     }
 
     function evaluate() {
@@ -31,29 +64,23 @@ export function useHideOnScroll(containerRef, { threshold = 8, offset = 65 } = {
         const y = el.scrollTop;
         const maxY = el.scrollHeight - el.clientHeight;
 
-        // iOS rubber-banding reports scrollTop outside [0, maxY]. Reacting to those
-        // values makes the header flap, so treat the overscroll region as "no news".
+        // iOS rubber-banding reports scrollTop outside [0, maxY]. Reacting to
+        // those values makes the header flap, so treat that region as no news.
         if (y < 0 || y > maxY) return;
 
-        if (y <= offset) {
-            hidden.value = false;
-            lastY = y;
-            return;
-        }
-
-        // Toggling the header resizes the content row, which changes scrollHeight.
-        // At the very bottom that would clamp scrollTop, fire another scroll event
-        // and oscillate. Freeze the decision in the last stretch instead.
-        if (maxY - y <= BOTTOM_DEAD_ZONE) {
-            lastY = y;
-            return;
-        }
-
         const delta = y - lastY;
-        if (Math.abs(delta) < threshold) return;
-
-        hidden.value = delta > 0;
         lastY = y;
+
+        settling.value = false;
+
+        // The scroll position near the top is a *cap*, not an assignment. It
+        // guarantees the header is whole again at scrollTop 0 with no drift —
+        // but assigning it would push an already-revealed header back down: a
+        // flick to the top revealed it at y=300, then y=60 shoved it 60px up
+        // again and it slid in a second time.
+        offset.value = Math.min(clamp(offset.value + delta), y);
+
+        scheduleSnap();
     }
 
     function onScroll() {
@@ -67,8 +94,9 @@ export function useHideOnScroll(containerRef, { threshold = 8, offset = 65 } = {
     });
 
     onUnmounted(() => {
+        clearTimeout(snapTimer);
         containerRef.value?.removeEventListener('scroll', onScroll);
     });
 
-    return { hidden, show };
+    return { offset, hidden, settling, show };
 }

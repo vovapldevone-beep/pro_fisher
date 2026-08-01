@@ -11,6 +11,11 @@ export const i18n = createI18n({
     messages: { uk, pl },
 });
 
+// The blade shell ships lang="uk"; a returning PL visitor kept it until they
+// touched the switcher, so screen readers and Chrome's translate prompt saw
+// Ukrainian on a Polish page.
+document.documentElement.lang = savedLocale;
+
 export function setLocale(locale) {
     i18n.global.locale.value = locale;
     localStorage.setItem('locale', locale);

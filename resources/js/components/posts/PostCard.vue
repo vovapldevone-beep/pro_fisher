@@ -58,8 +58,9 @@
             </div>
         </div>
 
-        <!-- User avatar (top-right) -->
-        <div v-if="catchItem.user" class="absolute right-2 top-2">
+        <!-- User avatar (top-right). The white ring keeps it readable over a
+             photo of any colour — a dark avatar on a dark photo merged into it. -->
+        <div v-if="catchItem.user" class="absolute right-2 top-2 flex rounded-full ring-2 ring-white/80">
             <UserAvatar :user="catchItem.user" size="md" />
         </div>
     </div>

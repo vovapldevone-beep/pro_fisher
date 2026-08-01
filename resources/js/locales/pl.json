@@ -74,10 +74,24 @@
   },
   "auth": {
     "loginToContinue": "Zaloguj się aby kontynuować",
+    "loginTitle": "Zaloguj się",
+    "registerTitle": "Rejestracja",
+    "googleLogin": "Kontynuuj z Google",
+    "googleRegister": "Zarejestruj się przez Google",
+    "or": "lub",
+    "name": "Imię",
+    "email": "Email",
     "password": "Hasło",
+    "passwordConfirm": "Potwierdź hasło",
+    "loginButton": "Zaloguj",
+    "loginLink": "Zaloguj się",
     "logging": "Logowanie...",
+    "registering": "Rejestracja...",
     "noAccount": "Nie masz konta?",
-    "register": "Zarejestruj się"
+    "haveAccount": "Masz już konto?",
+    "register": "Zarejestruj się",
+    "errorGoogle": "Nie udało się zalogować przez Google. Spróbuj ponownie.",
+    "errorBlocked": "Twoje konto zostało zablokowane."
   },
   "post": {
     "new": "Nowy post",
@@ -203,6 +217,7 @@
     "participating": "Bierzesz udział w losowaniu! 🎉",
     "progressLabel": "Twój postęp",
     "howTitle": "Jak wziąć udział",
+    "stepRegister": "Zarejestruj się na platformie",
     "step1": "Przeglądaj tablicę postów i szukaj ukrytych rybek 🐟",
     "step2": "Kliknij każdą znalezioną rybkę — licznik w nagłówku je zlicza",
     "step3": "Znajdź wszystkie 10 — a Twoje imię trafia do losowania",

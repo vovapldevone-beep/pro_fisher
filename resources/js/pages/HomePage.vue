@@ -57,6 +57,16 @@
 
         <!-- Content -->
         <section class="bg-slate-100 py-8 sm:py-12">
+            <!-- Raffle: guests only. Signed-in users are redirected off this
+                 page anyway, and for them the card lives on /raffle with their
+                 own progress bar. -->
+            <div
+                v-if="!authStore.isAuthenticated"
+                class="mx-auto mb-4 max-w-3xl px-4 sm:mb-6 sm:px-6 lg:px-8"
+            >
+                <RaffleCard :show-progress="false" signup-step />
+            </div>
+
             <div class="mx-auto grid max-w-7xl gap-4 px-4 sm:gap-6 sm:px-6 lg:grid-cols-2 lg:px-8">
                 <!-- Popular lakes -->
                 <div class="min-w-0 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
@@ -105,6 +115,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { fetchHomeStats, fetchPopularLakes, fetchRecentCatches } from '../api/home';
+import RaffleCard from '../components/fish/RaffleCard.vue';
 import PopularLakeItem from '../components/home/PopularLakeItem.vue';
 import RecentCatchItem from '../components/home/RecentCatchItem.vue';
 import AppIcon from '../components/shared/AppIcon.vue';

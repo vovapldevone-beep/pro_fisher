@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-3 lg:grid-cols-6">
+    <div class="grid grid-cols-2 gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-3 lg:grid-cols-5">
         <div v-for="stat in items" :key="stat.label" class="text-center">
             <div class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                 <AppIcon :name="stat.icon" class="h-5 w-5" />
@@ -36,6 +36,6 @@ const items = computed(() => [
     },
     { icon: 'users', value: props.stats.followers_count, label: t('stats.followers') },
     { icon: 'heart', value: props.stats.total_likes ?? 0, label: t('stats.likes') },
-    { icon: 'trophy', value: `#${props.stats.ranking}`, label: t('stats.ranking') },
+    // No ranking chip — nothing computes it yet, so it only ever showed "#0"
 ]);
 </script>
