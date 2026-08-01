@@ -170,6 +170,7 @@
         :post="selectedPost"
         @close="selectedPost = null"
         @comment-added="handleCommentAdded"
+        @like-changed="handleLikeChanged"
     />
 </template>
 

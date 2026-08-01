@@ -146,7 +146,11 @@
       "Bash(node --input-type=module -e ' *)",
       "Bash(python3 -c \"import json,sys;[print\\(r['method'],r['uri'],'|',r['middleware']\\) for r in json.load\\(sys.stdin\\)]\")",
       "Bash(pkill -f \"artisan serve\")",
-      "Bash(grep -n \"Protected API routes use the \\\\`auth:sanctum\\\\`\" CLAUDE.md)"
+      "Bash(grep -n \"Protected API routes use the \\\\`auth:sanctum\\\\`\" CLAUDE.md)",
+      "Bash(node -e \"console.log\\(require.resolve\\('puppeteer'\\)\\)\")",
+      "Bash(node -e \"console.log\\('ws ok', typeof require\\('ws'\\)\\)\")",
+      "Bash(node /tmp/claude-1000/-home-qwas-projects-pro-fisher/c7732dc9-2b11-4b29-a147-4167955b5a3c/scratchpad/drive.mjs)",
+      "Bash(node drive.mjs)"
     ],
     "additionalDirectories": [
       "/home/qwas/projects/pro_fisher/resources/js/pages",

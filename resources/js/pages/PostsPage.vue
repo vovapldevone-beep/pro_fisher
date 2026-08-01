@@ -113,6 +113,7 @@
             :post="selectedPost"
             @close="selectedPost = null"
             @comment-added="handleCommentAdded"
+            @like-changed="handleLikeChanged"
             @edit="startEdit"
             @deleted="handleDeleted"
         />

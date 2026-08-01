@@ -68,14 +68,33 @@
 
                     <!-- Photo (left side on desktop). object-contain: never crop the shot,
                          letterbox it against the dark backing instead. -->
-                    <div class="flex shrink-0 items-center justify-center bg-slate-900 md:h-full md:w-3/5">
+                    <div
+                        class="relative flex shrink-0 select-none items-center justify-center bg-slate-900 md:h-full md:w-3/5"
+                        @pointerdown="onPhotoPointerDown"
+                    >
                         <img
                             v-if="post.photo_url"
                             :src="post.photo_url"
                             :alt="post.fish_name"
                             class="max-h-[40vh] w-full object-contain sm:max-h-[50vh] md:h-full md:max-h-full"
+                            draggable="false"
                         />
                         <div v-else class="flex h-56 w-full items-center justify-center text-6xl sm:h-72 md:h-full">🐟</div>
+
+                        <!-- Double-tap feedback: without it nothing on screen
+                             says the gesture registered, since the counter is
+                             in the other column on desktop. -->
+                        <div
+                            v-if="burst"
+                            class="pointer-events-none absolute inset-0 flex items-center justify-center"
+                        >
+                            <AppIcon
+                                name="heart"
+                                class="like-burst h-24 w-24 drop-shadow-lg"
+                                :class="liked ? 'text-red-500' : 'text-white/80'"
+                                :fill="liked ? 'currentColor' : 'none'"
+                            />
+                        </div>
                     </div>
 
                     <!-- Details column. min-w-0: without it the column cannot
@@ -110,10 +129,20 @@
 
                         <!-- Likes + comments count -->
                         <div class="mt-2 flex items-center gap-4 text-sm">
-                            <span class="flex items-center gap-1 text-red-400">
-                                <AppIcon name="heart" class="h-4 w-4" fill="currentColor" />
-                                {{ t('post.likes', { n: post.likes_count ?? 0 }) }}
-                            </span>
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 transition"
+                                :class="liked ? 'text-red-500' : 'text-slate-400 hover:text-red-500'"
+                                :aria-pressed="liked"
+                                @click="toggleLike"
+                            >
+                                <AppIcon
+                                    name="heart"
+                                    class="h-4 w-4"
+                                    :fill="liked ? 'currentColor' : 'none'"
+                                />
+                                {{ t('post.likes', { n: likesCount }) }}
+                            </button>
                             <span class="flex items-center gap-1 text-slate-400">
                                 <AppIcon name="comment" class="h-4 w-4" />
                                 {{ t('post.comments', { n: comments.length }) }}
@@ -183,6 +212,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'v
 import { useI18n } from 'vue-i18n';
 import { deleteCatch } from '../../api/catches';
 import { fetchComments, postComment } from '../../api/comments';
+import { useLike } from '../../composables/useLike';
 import { useScrollLock } from '../../composables/useScrollLock';
 import { useAuthStore } from '../../stores/auth';
 import { useFishStore } from '../../stores/fish';
@@ -201,9 +231,49 @@ const props = defineProps({
     post: { type: Object, default: null },
 });
 
-const emit = defineEmits(['close', 'comment-added', 'edit', 'deleted']);
+const emit = defineEmits(['close', 'comment-added', 'edit', 'deleted', 'like-changed']);
 
 useScrollLock(toRef(props, 'show'));
+
+// ─── Likes ────────────────────────────────────────────────────────────────────
+
+const { liked, likesCount, toggle: toggleLike } = useLike(
+    () => props.post,
+    (change) => emit('like-changed', change)
+);
+
+const burst = ref(false);
+let burstTimer = null;
+let lastTap = { time: 0, x: 0, y: 0 };
+
+/**
+ * Double-tap on the photo. Timed by hand rather than with `dblclick`, which
+ * fires unreliably on touch (some mobile browsers swallow it while deciding
+ * whether the gesture is a zoom) — and where it does fire, it would arrive on
+ * top of a touch handler and toggle the like twice.
+ */
+function onPhotoPointerDown(e) {
+    const now = Date.now();
+    const isDouble = now - lastTap.time < 350
+        && Math.abs(e.clientX - lastTap.x) < 40
+        && Math.abs(e.clientY - lastTap.y) < 40;
+
+    if (isDouble) {
+        lastTap = { time: 0, x: 0, y: 0 }; // a third tap must not count as another pair
+        toggleLike();
+        showBurst();
+
+        return;
+    }
+
+    lastTap = { time: now, x: e.clientX, y: e.clientY };
+}
+
+function showBurst() {
+    clearTimeout(burstTimer);
+    burst.value = true;
+    burstTimer = setTimeout(() => { burst.value = false; }, 700);
+}
 
 // ─── Hidden fish (10% per open) ───────────────────────────────────────────────
 
@@ -298,6 +368,7 @@ onMounted(() => {
 onUnmounted(() => {
     document.removeEventListener('keydown', onKeydown);
     document.removeEventListener('pointerdown', onPointerDown);
+    clearTimeout(burstTimer);
 });
 
 const comments = ref([]);
@@ -407,7 +478,35 @@ watch(() => props.post?.id, (id) => {
     opacity: 0;
 }
 
+/* Double-tap heart: pops past its size, then fades out where it is. */
+.like-burst {
+    animation: like-burst 0.7s ease-out forwards;
+}
+@keyframes like-burst {
+    0% {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    30% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+    60% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.05);
+        opacity: 0;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .like-burst {
+        animation: none;
+        opacity: 0;
+    }
+
     .zoom-enter-active .zoom-panel,
     .zoom-leave-active .zoom-panel {
         transition: opacity 0.15s ease;

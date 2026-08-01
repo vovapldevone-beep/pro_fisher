@@ -66,10 +66,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../../stores/auth';
-import { toggleLike } from '../../api/catches';
+import { computed } from 'vue';
+import { useLike } from '../../composables/useLike';
 import LocationBadge from '../shared/LocationBadge.vue';
 import UserAvatar from '../shared/UserAvatar.vue';
 import AppIcon from '../shared/AppIcon.vue';
@@ -82,12 +80,10 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'like-changed']);
 
-const router = useRouter();
-const authStore = useAuthStore();
-
-
-const liked = ref(props.catchItem.is_liked ?? false);
-const likesCount = ref(props.catchItem.likes_count ?? 0);
+const { liked, likesCount, toggle: handleLike } = useLike(
+    () => props.catchItem,
+    (change) => emit('like-changed', change)
+);
 
 const title = computed(() => {
     const full = props.catchItem.fish_name || props.catchItem.notes || 'Пост';
@@ -117,23 +113,5 @@ const locationBadge = computed(() => {
     }
     return null;
 });
-
-async function handleLike() {
-    if (!authStore.isAuthenticated) {
-        router.push({ name: 'login' });
-        return;
-    }
-    liked.value = !liked.value;
-    likesCount.value += liked.value ? 1 : -1;
-    try {
-        const result = await toggleLike(props.catchItem.id);
-        liked.value = result.liked;
-        likesCount.value = result.likes_count;
-        emit('like-changed', { id: props.catchItem.id, liked: result.liked, likes_count: result.likes_count });
-    } catch {
-        liked.value = !liked.value;
-        likesCount.value += liked.value ? 1 : -1;
-    }
-}
 
 </script>
